@@ -1,0 +1,7 @@
+{
+  "name": "MyTrainingTeam",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
