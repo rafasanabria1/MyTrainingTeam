@@ -7,7 +7,7 @@ const EditProfile: React.FC = () => {
     return (
         <IonPage>
             <IonHeader>
-                <IonToolbar color="primary" className="ion-text-center">
+                <IonToolbar className="ion-text-center">
                     <IonButtons slot="start">
                         <IonBackButton defaultHref="/groups"/>
                     </IonButtons>
@@ -25,7 +25,7 @@ const EditProfile: React.FC = () => {
                         <IonCol size="4" size-md="2" offset-md="2">
                             <IonItem className="ion-text-center">
                                 <IonAvatar>
-                                    <img src="http://s.gravatar.com/avatar/e202f021a11993d733f364e2109aecba?s=80" />
+                                    <img src="http://s.gravatar.com/avatar/e202f021a11993d733f364e2109aecba?s=80" alt="Imagen de perfil" />
                                 </IonAvatar>
                             </IonItem>
                         </IonCol>

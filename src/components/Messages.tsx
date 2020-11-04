@@ -6,7 +6,7 @@ const Messages: React.FC = () => {
     return (
         <IonPage>
             <IonHeader>
-                <IonToolbar color="primary" class="ion-text-center">
+                <IonToolbar class="ion-text-center">
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>

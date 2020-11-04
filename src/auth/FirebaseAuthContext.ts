@@ -13,6 +13,7 @@ export interface FirebaseAuthContextInterface {
 
     isUserLogged: boolean,
     user: User | null;
+    errorMsg: string;
     login: (email: string, password: string) => void;
     logout: () => void;
     createUser: () => void;
@@ -24,6 +25,7 @@ const FirebaseAuthContext = React.createContext <FirebaseAuthContextInterface> (
 
     isUserLogged: false,
     user: null,
+    errorMsg: '',
     login: () => {},
     logout: () => {},
     createUser: () => {},

@@ -1,43 +1,58 @@
-import React, { useContext, useRef } from 'react';
-import { IonButton, IonCol, IonContent, IonGrid, IonInput, IonItem, IonLabel, IonPage, IonRow, IonToast } from '@ionic/react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { IonButton, IonCol, IonContent, IonGrid, IonInput, IonItem, IonLabel, IonLoading, IonPage, IonRow, IonToast } from '@ionic/react';
 import FirebaseAuthContext from '../auth/FirebaseAuthContext';
 
 const Login: React.FC = () => {
 
     const FirebaseAuthCtx = useContext (FirebaseAuthContext);
+    const history         = useHistory ();
 
-    var emailRef               = useRef<HTMLIonInputElement> (null);
-    var passwordRef            = useRef<HTMLIonInputElement> (null);
-    
-    const validateEmail = (email: string) => {
+    let emailRef               = useRef<HTMLIonInputElement> (null);
+    let passwordRef            = useRef<HTMLIonInputElement> (null);
 
-        var regEx = /\S+@\S+\.\S+/;
-        return regEx.test(email);
-    }
+    var [errorMsg, setErrorMsg]       = useState<string> ('');
+    var [showLoading, setShowLoading] = useState<boolean> (true);
+
+    useEffect ( () => {
+        if (FirebaseAuthCtx.isUserLogged) history.push ('/groups');
+        else if (FirebaseAuthCtx.errorMsg) setErrorMsg (FirebaseAuthCtx.errorMsg);
+
+        //setShowLoading (false);
+    }, [FirebaseAuthCtx.isUserLogged, FirebaseAuthCtx.errorMsg, history]);
 
 
-    const loginHandler = () => {
+    const LoginHandler = () => {
 
-        let enteredEmail = emailRef.current!.value?.toString ().trim ();
+        let enteredEmail    = emailRef.current!.value?.toString ().trim ();
         let enteredPassword = passwordRef.current!.value?.toString ().trim ();
-        enteredEmail = 'rafasanabria1@gmail.com';
-        enteredPassword = 'eltiolavara09';
+        
+        if (! enteredEmail || ! enteredPassword || enteredEmail.length === 0 || enteredPassword.length === 0) {
+            setErrorMsg ("Debe introducir un e-mail y una contraseña");
+            return;
+        }
 
+        if (! /\S+@\S+\.\S+/.test (enteredEmail!)) {
+            setErrorMsg ("Debe introducir un e-mail válido");
+            return;
+        }
+        
         FirebaseAuthCtx.login (enteredEmail!, enteredPassword!);
     }
 
 
     return (
         <IonPage>
-            {/* <IonToast isOpen={!!errorMsg} message={errorMsg} duration={2000} color="danger" /> */}
-            {/* <IonToast isOpen={!!successMsg} message={successMsg} duration={2000} color="success" /> */}
             <IonContent fullscreen className="ion-padding ion-text-center">
+                <IonToast isOpen={!!errorMsg} message={errorMsg} color="danger" duration={2000} />
+                <IonLoading isOpen={showLoading} duration={1000} onDidDismiss={ () => { setShowLoading(false); }}/>
+                { ! showLoading && (
                 <IonGrid>
                     <IonRow>
                         <IonCol>
                             <IonItem>
                                 <IonLabel position="floating">E-mail</IonLabel>
-                                <IonInput type="email" ref={emailRef}></IonInput>
+                                <IonInput type="email" ref={emailRef} value="rafasanabria1@gmail.com"></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>
@@ -45,13 +60,13 @@ const Login: React.FC = () => {
                         <IonCol>
                             <IonItem>
                                 <IonLabel position="floating">Contraseña</IonLabel>
-                                <IonInput type="password" ref={passwordRef}></IonInput>
+                                <IonInput type="password" ref={passwordRef} value="eltiolavara09"></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>
                     <IonRow className="ion-margin-top">
                         <IonCol>
-                            <IonButton color="primary" expand="block" onClick={loginHandler}>
+                            <IonButton color="primary" expand="block" onClick={LoginHandler}>
                                 <IonLabel>Iniciar sesión</IonLabel>
                             </IonButton>
                         </IonCol>
@@ -64,6 +79,7 @@ const Login: React.FC = () => {
                         </IonCol>
                     </IonRow>
                 </IonGrid>
+                )}
             </IonContent>
         </IonPage>
     );
