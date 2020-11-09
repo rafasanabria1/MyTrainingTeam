@@ -1,17 +1,23 @@
-import React, {  } from 'react';
-import { IonApp, IonRouterOutlet  } from '@ionic/react';
+import React from 'react';
+import { Route } from 'react-router-dom';
+import { IonApp, IonLoading, IonRouterOutlet  } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect } from 'react-router-dom';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
-import FirebaseAuthContextProvider from './auth/FirebaseAuthContextProvider';
+
+import firebaseConfig from './config/firebase';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+
 import EditProfile from './components/EditProfile';
+import Group from './components/Group';
 import Groups from './components/Groups';
 import Messages from './components/Messages';
 import Login from './components/Login';
-import PrivateRoute from './components/PrivateRoute';
-import PublicRoute from './components/PublicRoute';
 import ResetPassword from './components/ResetPassword';
 import SideMenu from './components/SideMenu';
+import NotFound from './components/NotFound';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -36,21 +42,47 @@ import './theme/theme.css';
 
 const App: React.FC = () => {
 
+	if (! firebase.apps.length) {
+        firebase.initializeApp (firebaseConfig);
+    }
+	
+	const [user, loading] = useAuthState (firebase.auth ());
+
 	return (
 		<IonApp>
-			<FirebaseAuthContextProvider>
-				<IonReactRouter>
-					<SideMenu />
-					<IonRouterOutlet id="main">
-						<PublicRoute path="/login" exact={true} component={Login} />
-						<PrivateRoute path="/edit-profile" exact={true} component={EditProfile} />
-						<PrivateRoute path="/groups" exact={true} component={Groups} />
-						<PrivateRoute path="/messages" exact={true} component={Messages} />
-						<PrivateRoute path="/reset-password" exact={true} component={ResetPassword} />
-						<Redirect path="" to="/login" />
-					</IonRouterOutlet>
-				</IonReactRouter>
-			</FirebaseAuthContextProvider>
+			{
+				loading && (
+					<IonLoading isOpen={loading}></IonLoading>
+				)
+			}
+			{
+				(! loading && user === null) && (
+			
+					<IonReactRouter>
+						<IonRouterOutlet id="main">
+							<Route path="/login" exact component={Login} />
+							<Route path="/reset-password" exact component={ResetPassword} />
+							<Redirect path="" to="/login" />
+						</IonRouterOutlet>
+					</IonReactRouter>
+				)
+			}
+			{
+				(! loading && user !== null) && (
+					<IonReactRouter>
+						<SideMenu />
+						<IonRouterOutlet id="main">
+							<Route path="/not-found" exact component={NotFound} />
+							<Route path="/edit-profile" exact component={EditProfile} />
+							<Route path="/groups/:id" exact component={Group} />
+							<Route path="/groups" exact component={Groups} />
+							<Route path="/messages" exact component={Messages} />
+							<Redirect path="/" to="/groups" exact/>
+							<Redirect path="" to="not-found" />
+						</IonRouterOutlet>
+					</IonReactRouter>
+				)
+			}	
 		</IonApp>
 	);
 };

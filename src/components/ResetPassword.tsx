@@ -24,7 +24,7 @@ const ResetPassword: React.FC = () => {
                     </IonRow>
                     <IonRow>
                         <IonCol>
-                            <IonButton color="tertiary" fill="clear" routerLink="/login" routerDirection="none">
+                            <IonButton color="secondary" fill="clear" routerLink="/login" routerDirection="none">
                                 <IonLabel>¿Ya tiene una cuenta?</IonLabel>
                             </IonButton>
                         </IonCol>

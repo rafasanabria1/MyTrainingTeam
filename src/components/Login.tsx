@@ -1,28 +1,17 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { IonButton, IonCol, IonContent, IonGrid, IonInput, IonItem, IonLabel, IonLoading, IonPage, IonRow, IonToast } from '@ionic/react';
-import FirebaseAuthContext from '../auth/FirebaseAuthContext';
+import React, { useRef, useState } from 'react';
+import { IonButton, IonCol, IonContent, IonGrid, IonInput, IonItem, IonLabel, IonPage, IonRow } from '@ionic/react';
+import firebase from 'firebase/app';
+
 
 const Login: React.FC = () => {
-
-    const FirebaseAuthCtx = useContext (FirebaseAuthContext);
-    const history         = useHistory ();
 
     let emailRef               = useRef<HTMLIonInputElement> (null);
     let passwordRef            = useRef<HTMLIonInputElement> (null);
 
-    var [errorMsg, setErrorMsg]       = useState<string> ('');
-    var [showLoading, setShowLoading] = useState<boolean> (true);
-
-    useEffect ( () => {
-        if (FirebaseAuthCtx.isUserLogged) history.push ('/groups');
-        else if (FirebaseAuthCtx.errorMsg) setErrorMsg (FirebaseAuthCtx.errorMsg);
-
-        //setShowLoading (false);
-    }, [FirebaseAuthCtx.isUserLogged, FirebaseAuthCtx.errorMsg, history]);
-
+    const [errorMsg, setErrorMsg] = useState<string> ('');
 
     const LoginHandler = () => {
+
 
         let enteredEmail    = emailRef.current!.value?.toString ().trim ();
         let enteredPassword = passwordRef.current!.value?.toString ().trim ();
@@ -37,33 +26,46 @@ const Login: React.FC = () => {
             return;
         }
         
-        FirebaseAuthCtx.login (enteredEmail!, enteredPassword!);
+        firebase.auth ().signInWithEmailAndPassword (enteredEmail, enteredPassword).catch ((err) => {
+            
+            let message = "Error desconocido.";
+            if (err.code === 'auth/too-many-requests') message = "Cuenta bloqueada por demasiados intentos fallidos de login.";
+            else if (err.code === 'auth/wrong-password') message = "Contraseña incorrecta.";
+            else if (err.message !== '') message = err.message;
+            setErrorMsg (message);
+        });
     }
 
 
     return (
         <IonPage>
             <IonContent fullscreen className="ion-padding ion-text-center">
-                <IonToast isOpen={!!errorMsg} message={errorMsg} color="danger" duration={2000} />
-                <IonLoading isOpen={showLoading} duration={1000} onDidDismiss={ () => { setShowLoading(false); }}/>
-                { ! showLoading && (
                 <IonGrid>
                     <IonRow>
                         <IonCol>
-                            <IonItem>
-                                <IonLabel position="floating">E-mail</IonLabel>
-                                <IonInput type="email" ref={emailRef} value="rafasanabria1@gmail.com"></IonInput>
+                            <IonItem className="ion-no-padding ion-text-center">
+                                <IonLabel position="stacked">E-mail</IonLabel>
+                                <IonInput type="email" placeholder="E-mail" ref={emailRef} value="rafasanabria1@gmail.com"></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>
                     <IonRow>
                         <IonCol>
-                            <IonItem>
-                                <IonLabel position="floating">Contraseña</IonLabel>
-                                <IonInput type="password" ref={passwordRef} value="eltiolavara09"></IonInput>
+                            <IonItem className="ion-no-padding ion-text-center">
+                                <IonLabel position="stacked">Contraseña</IonLabel>
+                                <IonInput type="password" placeholder="Contraseña" ref={passwordRef} value="eltiolavara0"></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>
+                    { errorMsg!! && (
+                        <IonRow>
+                            <IonCol>
+                                <IonLabel color="danger">
+                                    {errorMsg}
+                                </IonLabel>
+                            </IonCol>
+                        </IonRow>
+                    )}
                     <IonRow className="ion-margin-top">
                         <IonCol>
                             <IonButton color="primary" expand="block" onClick={LoginHandler}>
@@ -73,13 +75,12 @@ const Login: React.FC = () => {
                     </IonRow>
                     <IonRow>
                         <IonCol>
-                            <IonButton color="tertiary" fill="clear" routerLink="/reset-password" routerDirection="none">
+                            <IonButton color="secondary" fill="clear" routerLink="/reset-password" routerDirection="none">
                                 <IonLabel>¿Ha olvidado su contraseña?</IonLabel>
                             </IonButton>
                         </IonCol>
                     </IonRow>
                 </IonGrid>
-                )}
             </IonContent>
         </IonPage>
     );

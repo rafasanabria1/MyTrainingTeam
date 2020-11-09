@@ -2,3 +2,29 @@
     --ion-toolbar-background: var(--ion-color-primary);
     --ion-toolbar-color: var(--ion-color-primary-contrast);
 }
+
+.ion-no-margin-top {
+    margin-top: 0px !important;
+}
+.ion-no-margin-bottom {
+    margin-bottom: 0px !important;
+}
+.ion-no-margin-left {
+    margin-left: 0px !important;
+}
+.ion-no-margin-right {
+    margin-right: 0px !important;
+}
+
+.ion-no-padding-top {
+    padding-top: 0px !important;
+}
+.ion-no-padding-bottom {
+    padding-bottom: 0px !important;
+}
+.ion-no-padding-left {
+    padding-left: 0px !important;
+}
+.ion-no-padding-right {
+    padding-right: 0px !important;
+}
