@@ -53,7 +53,7 @@ const Login: React.FC = () => {
                         <IonCol>
                             <IonItem className="ion-no-padding ion-text-center">
                                 <IonLabel position="stacked">Contraseña</IonLabel>
-                                <IonInput type="password" placeholder="Contraseña" ref={passwordRef} value="eltiolavara0"></IonInput>
+                                <IonInput type="password" placeholder="Contraseña" ref={passwordRef} value="123456"></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>

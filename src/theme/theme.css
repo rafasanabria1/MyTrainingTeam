@@ -3,6 +3,7 @@
     --ion-toolbar-color: var(--ion-color-primary-contrast);
 }
 
+/* MARGINS */
 .ion-no-margin-top {
     margin-top: 0px !important;
 }
@@ -16,6 +17,7 @@
     margin-right: 0px !important;
 }
 
+/* PADDINGS */
 .ion-no-padding-top {
     padding-top: 0px !important;
 }
@@ -27,4 +29,30 @@
 }
 .ion-no-padding-right {
     padding-right: 0px !important;
+}
+
+/* FONT SIZES */
+.ion-text-xx-small {
+    font-size: xx-small !important;
+}
+.ion-text-x-small {
+    font-size: x-small !important;
+}
+.ion-text-smaller {
+    font-size: smaller !important;
+}
+.ion-text-small {
+    font-size: small !important;
+}
+.ion-text-large {
+    font-size: large !important;
+}
+.ion-text-larger {
+    font-size: larger !important;
+}
+.ion-text-x-large {
+    font-size: x-large !important;
+}
+.ion-text-xx-large {
+    font-size: xx-large !important;
 }

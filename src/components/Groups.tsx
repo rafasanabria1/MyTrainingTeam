@@ -1,5 +1,6 @@
-import { IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import React from 'react';
+import { IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { add } from 'ionicons/icons';
 
 const Groups: React.FC = () => {
       
@@ -11,10 +12,14 @@ const Groups: React.FC = () => {
                         <IonMenuButton />
                     </IonButtons>
                     <IonTitle>Groups</IonTitle>
+                    <IonButtons slot="end">
+                        <IonIcon icon={add} slot="icon-only" />
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
-            <IonContent>
+            <IonContent fullscreen>
                 <IonCard>
+                    <img src="https://dummyimage.com/600x300/000/fff.png&text=Foto+de+perfil+de+grupo" alt="Madison, WI"/>
                     <IonCardHeader>
                         <IonCardTitle>Madison, WI</IonCardTitle>
                         <IonCardSubtitle className="ion-no-margin">Destination</IonCardSubtitle>
@@ -24,6 +29,7 @@ const Groups: React.FC = () => {
                     </IonCardContent>
                 </IonCard>
                 <IonCard>
+                    <img src="https://dummyimage.com/600x300/000/fff.png&text=Foto+de+perfil+de+grupo" alt="Madison, WI"/>
                     <IonCardHeader>
                         <IonCardTitle>Madison, WI</IonCardTitle>
                         <IonCardSubtitle className="ion-no-margin">Destination</IonCardSubtitle>
@@ -33,6 +39,7 @@ const Groups: React.FC = () => {
                     </IonCardContent>
                 </IonCard>
                 <IonCard>
+                    <img src="https://dummyimage.com/600x300/000/fff.png&text=Foto+de+perfil+de+grupo" alt="Madison, WI"/>
                     <IonCardHeader>
                         <IonCardTitle>Madison, WI</IonCardTitle>
                         <IonCardSubtitle className="ion-no-margin">Destination</IonCardSubtitle>
@@ -42,6 +49,7 @@ const Groups: React.FC = () => {
                     </IonCardContent>
                 </IonCard>
                 <IonCard>
+                    <img src="https://dummyimage.com/600x300/000/fff.png&text=Foto+de+perfil+de+grupo" alt="Madison, WI"/>
                     <IonCardHeader>
                         <IonCardTitle>Madison, WI</IonCardTitle>
                         <IonCardSubtitle className="ion-no-margin">Destination</IonCardSubtitle>
@@ -51,6 +59,7 @@ const Groups: React.FC = () => {
                     </IonCardContent>
                 </IonCard>
                 <IonCard>
+                    <img src="https://dummyimage.com/600x300/000/fff.png&text=Foto+de+perfil+de+grupo" alt="Madison, WI"/>
                     <IonCardHeader>
                         <IonCardTitle>Madison, WI</IonCardTitle>
                         <IonCardSubtitle className="ion-no-margin">Destination</IonCardSubtitle>

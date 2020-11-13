@@ -10,14 +10,16 @@ import firebaseConfig from './config/firebase';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 
-import EditProfile from './components/EditProfile';
+import EditUserProfile from './components/EditUserProfile';
 import Group from './components/Group';
 import Groups from './components/Groups';
-import Messages from './components/Messages';
+import Links from './components/Links';
 import Login from './components/Login';
+import Messages from './components/Messages';
 import ResetPassword from './components/ResetPassword';
 import SideMenu from './components/SideMenu';
-import NotFound from './components/NotFound';
+import UserProfile from './components/UserProfile';
+import Users from './components/Users';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -72,13 +74,14 @@ const App: React.FC = () => {
 					<IonReactRouter>
 						<SideMenu />
 						<IonRouterOutlet id="main">
-							<Route path="/not-found" exact component={NotFound} />
-							<Route path="/edit-profile" exact component={EditProfile} />
+							<Route path="/edit-user-profile" exact component={EditUserProfile} />
 							<Route path="/groups/:id" exact component={Group} />
 							<Route path="/groups" exact component={Groups} />
 							<Route path="/messages" exact component={Messages} />
-							<Redirect path="/" to="/groups" exact/>
-							<Redirect path="" to="not-found" />
+							<Route path="/links" exact component={Links} />
+							<Route path="/users" exact component={Users} />
+							<Route path="/users/:id" exact component={UserProfile} />
+							<Redirect path="" to="/links" exact/>
 						</IonRouterOutlet>
 					</IonReactRouter>
 				)

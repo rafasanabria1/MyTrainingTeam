@@ -1,5 +1,5 @@
 import { IonButton, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle, IonToolbar } from '@ionic/react';
-import { chatbubbleOutline, exitOutline, peopleOutline, personOutline } from 'ionicons/icons';
+import { exitOutline, linkOutline } from 'ionicons/icons';
 import React from 'react';
 
 import firebase from 'firebase/app';
@@ -22,17 +22,9 @@ const SideMenu: React.FC = () => {
             <IonContent>
                 <IonList>
                     <IonMenuToggle>
-                        <IonItem button routerLink="/groups" routerDirection="none" lines="none">
-                            <IonIcon icon={peopleOutline} slot="start"/>
-                            <IonLabel>Mis grupos</IonLabel>
-                        </IonItem>
-                        <IonItem button routerLink="/messages" routerDirection="none" lines="none">
-                            <IonIcon icon={chatbubbleOutline} slot="start"/>
-                            <IonLabel>Mensajería</IonLabel>
-                        </IonItem> 
-                        <IonItem button routerLink="/edit-profile" routerDirection="none" lines="none">
-                            <IonIcon icon={personOutline} slot="start"/>
-                            <IonLabel>Mi perfil</IonLabel>
+                        <IonItem button routerLink="/links" routerDirection="none" lines="none">
+                            <IonIcon icon={linkOutline} slot="start"/>
+                            <IonLabel>Lista de enlaces</IonLabel>
                         </IonItem>
                         <IonButton fill="clear" onClick={logout} className="ion-text-center" expand="full">
                             <IonIcon icon={exitOutline} slot="start"/>

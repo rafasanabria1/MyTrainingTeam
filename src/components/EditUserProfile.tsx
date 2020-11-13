@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
-import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
+import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
 
 import moment from 'moment';
 
@@ -11,7 +11,7 @@ import 'firebase/auth';
 import 'firebase/firestore';
 import { useHistory } from 'react-router';
 
-const EditProfile: React.FC = () => {
+const EditUserProfile: React.FC = () => {
 
     if (! firebase.apps.length) {
         firebase.initializeApp (firebaseConfig);
@@ -28,7 +28,7 @@ const EditProfile: React.FC = () => {
     const birthdateRef    = useRef<HTMLIonDatetimeElement> (null);
     const genderRef       = useRef<HTMLIonSelectElement> (null);
     const weightRef       = useRef<HTMLIonInputElement> (null);
-    const oldPasswordRef     = useRef<HTMLIonInputElement> (null);
+    const oldPasswordRef  = useRef<HTMLIonInputElement> (null);
     const newPassword1Ref = useRef<HTMLIonInputElement> (null);
     const newPassword2Ref = useRef<HTMLIonInputElement> (null);
     const createAtRef     = useRef<HTMLSpanElement> (null);
@@ -128,7 +128,7 @@ const EditProfile: React.FC = () => {
             <IonHeader>
                 <IonToolbar className="ion-text-center">
                     <IonButtons slot="start">
-                        <IonBackButton defaultHref="/groups"/>
+                        <IonBackButton defaultHref="/links"/>
                     </IonButtons>
                     <IonTitle>Perfil</IonTitle>
                     <IonButtons slot="end">
@@ -150,6 +150,9 @@ const EditProfile: React.FC = () => {
                     </IonRow>
                     <IonRow>
                         <IonCol>
+                            <IonListHeader className="ion-text-center">
+                                <IonLabel>Información personal</IonLabel>
+                            </IonListHeader>
                             <IonList>
                                 <IonItemGroup>
                                     <IonItem>
@@ -178,9 +181,9 @@ const EditProfile: React.FC = () => {
                                     </IonItem>
                                 </IonItemGroup>
                             </IonList>
-                            <IonItemDivider className="ion-margin-top">
+                            <IonListHeader className="ion-text-center">
                                 <IonLabel>Credenciales</IonLabel>
-                            </IonItemDivider>
+                            </IonListHeader>
                             <IonItem>
                                 <IonLabel>Contraseña actual</IonLabel>
                                 <IonInput type="password" ref={oldPasswordRef} placeholder="Contraseña actual" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
@@ -218,4 +221,4 @@ const EditProfile: React.FC = () => {
     );
 };
 
-export default EditProfile;
+export default EditUserProfile;
