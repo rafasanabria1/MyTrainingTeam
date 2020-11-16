@@ -1,0 +1,13 @@
+{
+  "appId": "com.rafasanabria1.mytrainingteam",
+  "appName": "My Training Team",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "build",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "cordova": {}
+}

@@ -1,15 +1,21 @@
 import React, { useRef, useState } from 'react';
+import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonPage, IonProgressBar, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
+
+import { useHistory } from 'react-router';
 import { useAuthState } from 'react-firebase-hooks/auth';
-
-import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
-
-import moment from 'moment';
 
 import firebaseConfig from '../config/firebase';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
-import { useHistory } from 'react-router';
+import 'firebase/storage';
+
+import moment from 'moment';
+
+import { Plugins, CameraResultType, CameraSource, CameraDirection } from '@capacitor/core';
+import { base64FromPath } from '@ionic/react-hooks/filesystem';
+
+const { Camera } = Plugins;
 
 const EditUserProfile: React.FC = () => {
 
@@ -17,11 +23,14 @@ const EditUserProfile: React.FC = () => {
         firebase.initializeApp (firebaseConfig);
     }
 
-    const [showAlert, setShowAlert]           = useState<boolean> (false);
-    const [errorMsg, setErrorMsg]             = useState<string> ('');
-    const [profileSuccess, setProfileSuccess] = useState<boolean> (false);
-    const history                             = useHistory ();
-    const [user, loading, error]              = useAuthState (firebase.auth ());
+    const [showAlert, setShowAlert]                 = useState<boolean> (false);
+    const [errorMsg, setErrorMsg]                   = useState<string> ('');
+    const [profileSuccess, setProfileSuccess]       = useState<boolean> (false);
+    const [uploading, setUploading]                 = useState<number> (0);
+    const [defaultProfileImg, setDefaultProfileImg] = useState<string> ('assets/images/avatar.svg');
+    const [photo, setPhoto]                         = useState<{path: string, preview: string}> ();
+    const history                                   = useHistory ();
+    const [user, loading, error]                    = useAuthState (firebase.auth ());
 
     const nameRef         = useRef<HTMLIonInputElement> (null);
     const surnameRef      = useRef<HTMLIonInputElement> (null);
@@ -32,6 +41,8 @@ const EditUserProfile: React.FC = () => {
     const newPassword1Ref = useRef<HTMLIonInputElement> (null);
     const newPassword2Ref = useRef<HTMLIonInputElement> (null);
     const createAtRef     = useRef<HTMLSpanElement> (null);
+
+    var profileImgRef:any = null;
     
     firebase.firestore ().collection ('users').doc (user.uid).get ().then ( (doc) => {
 
@@ -43,12 +54,52 @@ const EditUserProfile: React.FC = () => {
             genderRef.current!.value       = doc.get ('gender');
             weightRef.current!.value       = doc.get ('weight');
             createAtRef.current!.innerHTML = moment (doc.get ('createAt').toDate ()).format ('DD/MM/YYYY');
+            
+            profileImgRef = firebase.storage ().ref ().child('profile-images/' + user.uid + '.jpg');
+            profileImgRef.getDownloadURL().then( (url:any) => {
+                
+                setDefaultProfileImg (url);
+            }).catch( (err:any) => {
+
+                if (error.code) {
+                    setErrorMsg ('Error de permisos en firebase/storage.');
+                }
+                console.log (err);
+            });
         } 
+
     }).catch ( (err) => {
 
         console.log (err);
     });
     
+
+
+    const takePhotoHandler = () => {
+
+        Camera.getPhoto ({
+            resultType: CameraResultType.Uri,
+            source: CameraSource.Prompt,
+            direction: CameraDirection.Front,
+            quality: 80,
+            width: 500,
+            promptLabelHeader: 'Seleccionar foto de perfil',
+            promptLabelCancel: 'Cancelar',
+            promptLabelPhoto: 'Abrir galería',
+            promptLabelPicture: 'Abrir cámara'
+            
+        }).then ( (photo) => {
+            if (! photo || ! photo.webPath) return;
+            
+            setPhoto (
+                {
+                    path: photo.path!,
+                    preview: photo.webPath!
+                }
+            );
+        });;
+    };
+
 
     const passwordChanged = () => {
 
@@ -115,7 +166,29 @@ const EditUserProfile: React.FC = () => {
 
         firebase.firestore ().collection ("users").doc (user.uid).update (updateObject).then ( () => {
 
-            setProfileSuccess (true);
+            if (photo && photo.preview) {
+                
+                base64FromPath (photo.preview ).then ( (base64ProfileImg) => {
+
+                    var profileImgRefUpload = profileImgRef.putString (base64ProfileImg, 'data_url');
+                    profileImgRefUpload.on ('state_changed', (snapshot:any) => {
+                        setUploading (snapshot.bytesTransferred / snapshot.totalBytes);
+                        
+                    }, (err:any) => {
+
+                        console.log (err);
+                    }, () => {
+                            
+                        setProfileSuccess (true);
+                    });
+                });
+            } else {
+
+                profileImgRef.delete ().then ( () => {
+                
+                    setProfileSuccess (true);
+                })
+            }
         }).catch ( (err) => {
             
             console.log (err);
@@ -144,14 +217,24 @@ const EditUserProfile: React.FC = () => {
                 <IonToast isOpen={profileSuccess} message="Perfil actualizado correctamente" color="success" position="bottom" duration={1500} onDidDismiss={ () => { setProfileSuccess (false); }} />
                 <IonGrid>
                     <IonRow className="ion-margin-vertical">
-                        <IonCol size="4" offset="4">
-                            
+                        <IonCol size="4" offset="4" className="ion-text-center img-edit-profile">
+                            {! photo && (
+                                <img src={defaultProfileImg} onClick={takePhotoHandler} />
+                            )}
+                            {photo && (
+                                <img src={photo.preview}  onClick={takePhotoHandler} />
+                            )}
+                            { (uploading > 0 && uploading < 1) && (
+
+                                <IonProgressBar value={uploading} />
+                                )
+                            }
                         </IonCol>
                     </IonRow>
                     <IonRow>
                         <IonCol>
                             <IonListHeader className="ion-text-center">
-                                <IonLabel>Información personal</IonLabel>
+                                <IonLabel className="ion-no-margin-top">Información personal</IonLabel>
                             </IonListHeader>
                             <IonList>
                                 <IonItemGroup>
