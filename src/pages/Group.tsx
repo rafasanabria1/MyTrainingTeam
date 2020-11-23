@@ -1,35 +1,77 @@
-import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
-import { add, send } from 'ionicons/icons';
 import React, { useState } from 'react';
+import { useDocumentData } from 'react-firebase-hooks/firestore';
+import { base64FromPath } from '@ionic/react-hooks/filesystem';
 import { useParams } from 'react-router';
+import { IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { add, send } from 'ionicons/icons';
+
+import EditGroupModal from '../components/EditGroupModal';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/storage';
-import { useDocumentOnce } from 'react-firebase-hooks/firestore';
-import { useDownloadURL } from 'react-firebase-hooks/storage';
 
 
 const Group: React.FC = () => {
 
-    const { id }            = useParams <any> ();
-    const [showAlertDelete, setShowAlertDelete] = useState<boolean> (false);
-
-    const [group, loading, errorGroup] = useDocumentOnce (firebase.firestore ().doc ('groups/' + id));
-    const [imgPath, loadingImg, errorImg] = useDownloadURL (firebase.storage ().ref ('groups-images/' + id));
+    const { id }                  = useParams <any> ();
+    const [group, loading, error] = useDocumentData <any> (firebase.firestore ().collection ("groups").doc (id), {idField: 'id'});
   
-    const deleteGroupHandler = () => {
+    const [isEditing, setIsEditing] = useState<boolean> (false);
+    
+    const cancelEditGroup = () => {
 
-        setShowAlertDelete (true);
+        setIsEditing (false);
     };
 
-    const deleteGroup = () => {
+    const saveGroup = (group_updated:any ) => {
 
-        
+        if (group_updated.photoPreview) {
+
+            base64FromPath (group_updated.photoPreview).then ( (base64ProfileImg: any) => {
+                
+                var profileImgRef       = firebase.storage ().ref ().child('groups-images/' + group.id);
+                profileImgRef.putString (base64ProfileImg, 'data_url').then (function (snapshot) {
+                    
+                    snapshot.ref.getDownloadURL ().then ( (downloadURL) => {
+
+                        delete group_updated.photoPreview;
+                        group_updated.groupImg = downloadURL;
+                        firebase.firestore ().collection ("groups").doc (group.id).update (group_updated).then ( () => {
+                            
+                            cancelEditGroup ();
+                        }).catch ( (err) => {
+                            
+                            console.log (err);
+                        });
+                    });
+                }).catch ( (err) => {
+
+                    console.log (err);
+                });
+            });
+        } else {
+
+            firebase.firestore ().collection ("groups").doc (group.id).update (group_updated).then ( () => {
+
+                cancelEditGroup ();
+            }).catch ( (err) => {
+                
+                console.log (err);
+            });
+        }
+
     };
+
 
     return (
         <IonPage>
+            <EditGroupModal 
+                show={isEditing}
+                onCancel={cancelEditGroup}
+                onSave={saveGroup}
+                editGroup={group}
+            />
             {
 				loading && (
 					<IonLoading isOpen={loading}></IonLoading>
@@ -38,45 +80,32 @@ const Group: React.FC = () => {
 			{
 				(! loading ) && (
                     <React.Fragment>
-                        <IonAlert header="¿Desea eliminar el grupo?" subHeader="Esta acción no podrá deshacerse." isOpen={showAlertDelete} onDidDismiss={ () => {setShowAlertDelete (false); }} buttons={
-                            [
-                                {
-                                    text: 'Cancelar',
-                                    role: 'cancel',
-                                    cssClass: 'secondary',
-                                    handler: () => {
-                                        setShowAlertDelete (false);
-                                    }
-                                },
-                                    {
-                                    text: 'Si, borrar',
-                                    handler: () => {
-                                        deleteGroup ();
-                                    }
-                                }  
-                            ]}
-                        />
                         <IonHeader>
                             <IonToolbar class="ion-text-center">
                                 <IonButtons slot="start">
                                     <IonBackButton defaultHref="/groups" text=""/>
                                 </IonButtons>
-                                <IonTitle>{group.get ('name')}</IonTitle>
+                                <IonTitle>{group.name}</IonTitle>
+                                <IonButtons slot="end">
+                                    <IonButton onClick={ () => { setIsEditing (true); }}>
+                                        <IonLabel>Editar</IonLabel>
+                                    </IonButton>
+                                </IonButtons>
                             </IonToolbar>
                         </IonHeader>
                         <IonContent fullscreen>
-                            { ! loadingImg && (
-                                <img src={imgPath} alt={group.get ('name')}/>
+                            { group.groupImg && (
+                                <img src={group.groupImg} alt={group.name}/>
                             )}
                             <IonGrid>
                                 <IonRow className="ion-text-center">
                                     <IonCol>
-                                        <IonLabel color="secondary">{group.get ('name')}</IonLabel>
+                                        <IonLabel color="secondary">{group.name}</IonLabel>
                                     </IonCol>
                                 </IonRow>
                                 <IonRow>
                                     <IonCol className="ion-text-justify">
-                                        <IonLabel>{group.get ('description')}</IonLabel>
+                                        <IonLabel>{group.description}</IonLabel>
                                     </IonCol>
                                 </IonRow>
                                 <IonRow>
@@ -184,14 +213,6 @@ const Group: React.FC = () => {
                                                 </IonLabel>
                                             </IonItem>
                                         </IonList>
-                                    </IonCol>
-                                </IonRow>
-                                <IonRow>
-                                    <IonCol>
-                                        <IonButton expand="full" color="danger" onClick={deleteGroupHandler}>
-                                            <IonLabel>Borrar grupo</IonLabel>
-                                        </IonButton>
-
                                     </IonCol>
                                 </IonRow>
                             </IonGrid>

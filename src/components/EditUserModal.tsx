@@ -1,12 +1,8 @@
 import { IonButton, IonButtons, IonContent, IonDatetime, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar } from '@ionic/react';
 import React, { useRef, useState } from 'react';
 
-import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/storage';
-
-import moment from 'moment';
-
 
 import { saveOutline } from 'ionicons/icons';
 

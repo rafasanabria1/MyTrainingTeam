@@ -3,7 +3,7 @@ import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonIn
 import { imageOutline } from 'ionicons/icons';
 
 import { Plugins, CameraResultType, CameraSource, CameraDirection } from '@capacitor/core';
-import { base64FromPath } from '@ionic/react-hooks/filesystem';
+
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
@@ -12,12 +12,14 @@ import 'firebase/storage';
 const { Camera } = Plugins;
 
 const EditGroupModal: React.FC<{
-    showModalAddGroup: boolean,
-    setShowModalAddGroup: (setShow:boolean) => void,
-    loadGroups: () => void,
+    show: boolean,
+    onCancel: () => void,
+    onSave: (group: any) => void,
+    editGroup: any
 }> = props => {
 
-    const [uploading, setUploading] = useState<number> (0);
+    const [errorMsg, setErrorMsg] = useState<string> ('');
+
     const [photo, setPhoto]         = useState<{path: string, preview: string}> ();
 
     const nameRef        = useRef<HTMLIonInputElement> (null);
@@ -49,51 +51,63 @@ const EditGroupModal: React.FC<{
     };
 
 
-    const createGroup = () => {
+    const saveHandler = () => {
 
-        let updateObject = {
-            name: nameRef.current?.value!.toString ().trim (),
-            description: descriptionRef.current?.value!.toString ().trim (),
-            createAt: new Date ()
-        };
+        if (nameRef.current?.value === undefined || 
+            nameRef.current?.value?.toString ().trim () === '') {
+                setErrorMsg ("Debe indicar un nombre.");
+                return;
+        }
 
-        firebase.firestore ().collection ("groups").add (updateObject).then ( (group) => {
+        let group = null;
+        if (props.editGroup) {
 
             if (photo && photo.preview) {
-                
-                base64FromPath (photo.preview).then ( (base64ProfileImg) => {
-
-                    var profileImgRef       = firebase.storage ().ref ().child('groups-images/' + group.id);
-                    var profileImgRefUpload = profileImgRef.putString (base64ProfileImg, 'data_url');
-
-                    profileImgRefUpload.on ('state_changed', (snapshot:any) => {
-
-                        setUploading (snapshot.bytesTransferred / snapshot.totalBytes); 
-                    }, (err:any) => {
-
-                        console.log (err);
-                    }, () => {
-                            
-                        props.setShowModalAddGroup (false);
-                    });
-                });
+                group = {
+                    name: nameRef.current!.value!.toString ().trim (),
+                    description: descriptionRef.current!.value?.toString ().trim (),
+                    groupImg: props.editGroup.groupImg,
+                    photoPreview: photo.preview
+                }
             } else {
-
-                props.setShowModalAddGroup (false);
+                group = {
+                    name: nameRef.current!.value!.toString ().trim (),
+                    description: descriptionRef.current!.value?.toString ().trim (),
+                    groupImg: props.editGroup.groupImg,
+                    photoPreview: ''
+                }
             }
-        }).catch ( (err) => {
-            
-            console.log (err);
-        });
+        } else {
+
+            if (photo && photo.preview) {
+                group = {
+                    name: nameRef.current!.value!.toString ().trim (),
+                    description: descriptionRef.current!.value?.toString ().trim (),
+                    groupImg: '',
+                    photoPreview: photo.preview,
+                    createAt: new Date ()
+                }
+            } else {
+                group = {
+                    name: nameRef.current!.value!.toString ().trim (),
+                    description: descriptionRef.current!.value?.toString ().trim (),
+                    groupImg: '',
+                    photoPreview: '',
+                    createAt: new Date ()
+                }
+            }
+        }
+
+        props.onSave (group);
     };
 
     return (
-        <IonModal isOpen={props.showModalAddGroup} swipeToClose={false} onDidDismiss={ () => { props.setShowModalAddGroup (false); setPhoto ({path: '', preview: ''}); props.loadGroups (); } } >
+        <IonModal isOpen={props.show} swipeToClose={false}>
             <IonPage>
                 <IonHeader>
                     <IonToolbar class="ion-text-center">
                         <IonButtons slot="start">
-                            <IonButton onClick={ () => { props.setShowModalAddGroup (false); }}>
+                            <IonButton onClick={ () => { setErrorMsg (""); props.onCancel(); }}>
                                 <IonLabel>Cancelar</IonLabel>
                             </IonButton>
                         </IonButtons>
@@ -103,32 +117,37 @@ const EditGroupModal: React.FC<{
                 <IonContent fullscreen >
                     <IonItem lines="none" className="ion-text-center ion-margin-vertical">
                         <IonLabel position="stacked">Nombre del grupo</IonLabel>
-                        <IonInput placeholder="Nombre del grupo" ref={nameRef} />
+                        <IonInput placeholder="Nombre del grupo" ref={nameRef} value={props.editGroup?.name}/>
                     </IonItem>
                     <IonItem lines="none" className="ion-text-center ion-margin-vertical">
                         <IonLabel position="stacked">Descripción del grupo</IonLabel>
-                        <IonTextarea placeholder="Descripción del grupo" maxlength={200} rows={3} ref={descriptionRef} />
+                        <IonTextarea placeholder="Descripción del grupo" maxlength={200} rows={3} ref={descriptionRef} value={props.editGroup?.description} />
                     </IonItem>
                     <div className="ion-text-center ion-margin-vertical">
+                            {(props.editGroup?.groupImg && ! photo && (
+                                <img src={props.editGroup.groupImg} alt="group-name" onClick={takePhotoHandler} />
+                            ))}
                             {photo && photo.preview !== '' && (
                                 <img src={photo.preview} alt="group-name" onClick={takePhotoHandler} />
                             )}
-                            { (uploading > 0 && uploading < 1) && (
-                                
-                                <IonProgressBar value={uploading} />
-                                )
-                            }
-                            {(! photo || photo.preview === '') && (
+                            {(! props.editGroup?.groupImg && (! photo || photo.preview === '')) && (
                                 <IonButton onClick={takePhotoHandler} className="ion-text-center">
                                     <IonLabel>Agregar fotografía</IonLabel>
                                     <IonIcon icon={imageOutline} slot="end" />
                                 </IonButton>
                             )}
                     </div>
+                    { errorMsg!!! && (
+                        <IonItem className="ion-text-center ion-no-margin ion-no-padding" lines="none">
+                            <IonLabel color="danger" className="ion-text-wrap ion-no-margin ion-no-padding">
+                                {errorMsg}
+                            </IonLabel>
+                        </IonItem>
+                    )}
                 </IonContent>
                 <IonFooter>
-                    <IonButton color="primary" expand="block" onClick={createGroup}>
-                        <IonLabel>Crear grupo</IonLabel>
+                    <IonButton color="primary" expand="block" onClick={saveHandler}>
+                        <IonLabel>{ props.editGroup ? 'Actualizar' : 'Crear' } grupo</IonLabel>
                     </IonButton>
                 </IonFooter>
             </IonPage>
