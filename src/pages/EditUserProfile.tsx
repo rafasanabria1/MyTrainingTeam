@@ -18,15 +18,14 @@ const { Camera } = Plugins;
 const EditUserProfile: React.FC<{
     user: any
 }> = props => {
-
-    const [showAlert, setShowAlert]                 = useState<boolean> (false);
-    const [errorMsg, setErrorMsg]                   = useState<string> ('');
-    const [profileSuccess, setProfileSuccess]       = useState<boolean> (false);
-    const [uploading, setUploading]                 = useState<number> (0);
-    const [defaultProfileImg, setDefaultProfileImg] = useState<string> ('assets/images/avatar.svg');
-    const [photo, setPhoto]                         = useState<{path: string, preview: string}> ();
-    const history                                   = useHistory ();
-
+    
+    const [showAlert, setShowAlert]           = useState<boolean> (false);
+    const [errorMsg, setErrorMsg]             = useState<string> ('');
+    const [profileSuccess, setProfileSuccess] = useState<boolean> (false);
+    const [uploading, setUploading]           = useState<number> (0);
+    const [photo, setPhoto]                   = useState<{path: string, preview: string}> ();
+    const [profileImg, setProfileImg]         = useState<string> ('assets/images/avatar.svg');
+    const history                             = useHistory ();
 
     const nameRef         = useRef<HTMLIonInputElement> (null);
     const surnameRef      = useRef<HTMLIonInputElement> (null);
@@ -48,19 +47,9 @@ const EditUserProfile: React.FC<{
             genderRef.current!.value       = doc.get ('gender');
             weightRef.current!.value       = doc.get ('weight');
             createAtRef.current!.innerHTML = moment (new firebase.firestore.Timestamp (doc.get ('createAt').seconds, doc.get ('createAt').nanoseconds).toDate ()).format ('DD/MM/YYYY');
+            setProfileImg (doc.get ('profileImg'));
             
             profileImgRef = firebase.storage ().ref ().child('profile-images/' + props.user.uid);
-            profileImgRef.getDownloadURL().then( (url:any) => {
-                
-                setDefaultProfileImg (url);
-            }).catch( (err:any) => {
-
-                if (err.code === 'storage/unauthorized') {
-                    setErrorMsg ('Error de permisos en firebase/storage.');
-                } else {
-                    console.log (err);
-                }
-            });
         } 
 
     }).catch ( (err) => {
@@ -156,40 +145,39 @@ const EditUserProfile: React.FC<{
             surname: surnameRef.current?.value!.toString ().trim (),
             gender: genderRef.current?.value!.toString ().trim (),
             weight: (weightRef.current?.value && weightRef.current!.value > 0) ? parseFloat (weightRef.current!.value!.toString ().trim ()) : 0,
+            profileImg: ''
         }
 
-        firebase.firestore ().collection ("users").doc (props.user.uid).update (updateObject).then ( () => {
+        if (photo && photo.preview) {
+            
+            base64FromPath (photo.preview ).then ( (base64ProfileImg) => {
 
-            if (photo && photo.preview) {
-                
-                base64FromPath (photo.preview ).then ( (base64ProfileImg) => {
+                var profileImgRefUpload = profileImgRef.putString (base64ProfileImg, 'data_url');
+                profileImgRefUpload.on ('state_changed', (snapshot:any) => {
+                    setUploading (snapshot.bytesTransferred / snapshot.totalBytes);
+                    
+                }, (err:any) => {
 
-                    var profileImgRefUpload = profileImgRef.putString (base64ProfileImg, 'data_url');
-                    profileImgRefUpload.on ('state_changed', (snapshot:any) => {
-                        setUploading (snapshot.bytesTransferred / snapshot.totalBytes);
+                    console.log (err);
+                }, () => {
+                    
+                    profileImgRefUpload.snapshot.ref.getDownloadURL ().then ( (url:any) => {
                         
-                    }, (err:any) => {
-
-                        console.log (err);
-                    }, () => {
+                        updateObject.profileImg = url;
+                        firebase.firestore ().collection ("users").doc (props.user.uid).update (updateObject).then ( () => {
+                
+                            setProfileSuccess (true);
+                        }).catch ( (err) => {
                             
-                        setProfileSuccess (true);
+                            console.log (err);
+                        });
                     });
                 });
-            } else {
+            });
+        } else {
 
-                /*
-                profileImgRef.delete ().then ( () => {
-                
-                    setProfileSuccess (true);
-                });
-                */
-               setProfileSuccess (true);
-            }
-        }).catch ( (err) => {
-            
-            console.log (err);
-        });
+            setProfileSuccess (true);
+        }
     };
 
 
@@ -215,8 +203,8 @@ const EditUserProfile: React.FC<{
                 <IonGrid>
                     <IonRow className="ion-margin-vertical">
                         <IonCol size="4" offset="4" className="ion-text-center img-edit-profile">
-                            {! photo && (
-                                <img src={defaultProfileImg} onClick={takePhotoHandler} alt={props.user.name} />
+                            {! photo &&  (
+                                <img src={profileImg} onClick={takePhotoHandler} alt={props.user.name} />
                             )}
                             {photo && (
                                 <img src={photo.preview}  onClick={takePhotoHandler} alt={props.user.name} />
