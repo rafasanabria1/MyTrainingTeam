@@ -27,9 +27,9 @@ const Links: React.FC = () => {
                     <IonItem routerLink="/groups/asdf">
                         <IonLabel>Detalle de grupo</IonLabel>
                     </IonItem>
-                    <IonItem routerLink="/messages">
+                    {/* <IonItem routerLink="/messages">
                         <IonLabel>Entrada de mensajes</IonLabel>
-                    </IonItem>
+                    </IonItem> */}
                     <IonItem routerLink="/edit-user-profile">
                         <IonLabel>Editar perfil</IonLabel>
                     </IonItem>

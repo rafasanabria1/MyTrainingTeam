@@ -1,10 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonPage, IonProgressBar, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
+import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonPage, IonProgressBar, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
 
 import { useHistory } from 'react-router';
-import { useAuthState } from 'react-firebase-hooks/auth';
 
-import firebaseConfig from '../config/firebase';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
@@ -17,11 +15,9 @@ import { base64FromPath } from '@ionic/react-hooks/filesystem';
 
 const { Camera } = Plugins;
 
-const EditUserProfile: React.FC = () => {
-
-    if (! firebase.apps.length) {
-        firebase.initializeApp (firebaseConfig);
-    }
+const EditUserProfile: React.FC<{
+    user: any
+}> = props => {
 
     const [showAlert, setShowAlert]                 = useState<boolean> (false);
     const [errorMsg, setErrorMsg]                   = useState<string> ('');
@@ -30,11 +26,10 @@ const EditUserProfile: React.FC = () => {
     const [defaultProfileImg, setDefaultProfileImg] = useState<string> ('assets/images/avatar.svg');
     const [photo, setPhoto]                         = useState<{path: string, preview: string}> ();
     const history                                   = useHistory ();
-    const [user, loading, error]                    = useAuthState (firebase.auth ());
+
 
     const nameRef         = useRef<HTMLIonInputElement> (null);
     const surnameRef      = useRef<HTMLIonInputElement> (null);
-    const birthdateRef    = useRef<HTMLIonDatetimeElement> (null);
     const genderRef       = useRef<HTMLIonSelectElement> (null);
     const weightRef       = useRef<HTMLIonInputElement> (null);
     const oldPasswordRef  = useRef<HTMLIonInputElement> (null);
@@ -44,27 +39,27 @@ const EditUserProfile: React.FC = () => {
 
     var profileImgRef:any = null;
     
-    firebase.firestore ().collection ('users').doc (user.uid).get ().then ( (doc) => {
+    firebase.firestore ().collection ('users').doc (props.user.uid).get ().then ( (doc) => {
 
         if (doc.exists) {
 
             nameRef.current!.value         = doc.get ('name');
             surnameRef.current!.value      = doc.get ('surname');
-            birthdateRef.current!.value    = doc.get ('birthdate').toDate ().toISOString ();
             genderRef.current!.value       = doc.get ('gender');
             weightRef.current!.value       = doc.get ('weight');
-            createAtRef.current!.innerHTML = moment (doc.get ('createAt').toDate ()).format ('DD/MM/YYYY');
+            createAtRef.current!.innerHTML = moment (new firebase.firestore.Timestamp (doc.get ('createAt').seconds, doc.get ('createAt').nanoseconds).toDate ()).format ('DD/MM/YYYY');
             
-            profileImgRef = firebase.storage ().ref ().child('profile-images/' + user.uid + '.jpg');
+            profileImgRef = firebase.storage ().ref ().child('profile-images/' + props.user.uid);
             profileImgRef.getDownloadURL().then( (url:any) => {
                 
                 setDefaultProfileImg (url);
             }).catch( (err:any) => {
 
-                if (error.code) {
+                if (err.code === 'storage/unauthorized') {
                     setErrorMsg ('Error de permisos en firebase/storage.');
+                } else {
+                    console.log (err);
                 }
-                console.log (err);
             });
         } 
 
@@ -135,10 +130,10 @@ const EditUserProfile: React.FC = () => {
             return;
         }
         
-        const credential = firebase.auth.EmailAuthProvider.credential (user.email, enteredOldPassword!);
-        user.reauthenticateWithCredential (credential).then ( () => {
+        const credential = firebase.auth.EmailAuthProvider.credential (props.user.email, enteredOldPassword!);
+        props.user.reauthenticateWithCredential (credential).then ( () => {
 
-            user.updatePassword (enteredNewPassword1!).then ( () => {
+            props.user.updatePassword (enteredNewPassword1!).then ( () => {
 
                 setShowAlert (true);
             }).catch ( () => {
@@ -159,12 +154,11 @@ const EditUserProfile: React.FC = () => {
         let updateObject = {
             name: nameRef.current?.value!.toString ().trim (),
             surname: surnameRef.current?.value!.toString ().trim (),
-            birthdate: birthdateRef.current?.value !== '' ? new Date (birthdateRef.current!.value!.toString ().trim ()) : '',
             gender: genderRef.current?.value!.toString ().trim (),
             weight: (weightRef.current?.value && weightRef.current!.value > 0) ? parseFloat (weightRef.current!.value!.toString ().trim ()) : 0,
         }
 
-        firebase.firestore ().collection ("users").doc (user.uid).update (updateObject).then ( () => {
+        firebase.firestore ().collection ("users").doc (props.user.uid).update (updateObject).then ( () => {
 
             if (photo && photo.preview) {
                 
@@ -184,10 +178,13 @@ const EditUserProfile: React.FC = () => {
                 });
             } else {
 
+                /*
                 profileImgRef.delete ().then ( () => {
                 
                     setProfileSuccess (true);
-                })
+                });
+                */
+               setProfileSuccess (true);
             }
         }).catch ( (err) => {
             
@@ -201,7 +198,7 @@ const EditUserProfile: React.FC = () => {
             <IonHeader>
                 <IonToolbar className="ion-text-center">
                     <IonButtons slot="start">
-                        <IonBackButton defaultHref="/links"/>
+                        <IonBackButton defaultHref="/groups" text=""/>
                     </IonButtons>
                     <IonTitle>Perfil</IonTitle>
                     <IonButtons slot="end">
@@ -219,10 +216,10 @@ const EditUserProfile: React.FC = () => {
                     <IonRow className="ion-margin-vertical">
                         <IonCol size="4" offset="4" className="ion-text-center img-edit-profile">
                             {! photo && (
-                                <img src={defaultProfileImg} onClick={takePhotoHandler} />
+                                <img src={defaultProfileImg} onClick={takePhotoHandler} alt={props.user.name} />
                             )}
                             {photo && (
-                                <img src={photo.preview}  onClick={takePhotoHandler} />
+                                <img src={photo.preview}  onClick={takePhotoHandler} alt={props.user.name} />
                             )}
                             { (uploading > 0 && uploading < 1) && (
 
@@ -245,10 +242,6 @@ const EditUserProfile: React.FC = () => {
                                     <IonItem>
                                         <IonLabel>Apellidos</IonLabel>
                                         <IonInput ref={surnameRef} placeholder="Apellidos" className="ion-text-right"/>
-                                    </IonItem>
-                                    <IonItem>
-                                        <IonLabel>Fecha de nacimiento</IonLabel>
-                                        <IonDatetime ref={birthdateRef} placeholder="Fecha de Nacimiento" displayFormat="DD MM YYYY" className="ion-text-right"/>
                                     </IonItem>
                                     <IonItem>
                                         <IonLabel>Sexo</IonLabel>

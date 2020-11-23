@@ -72,3 +72,9 @@
     object-fit: cover !important;
     border-radius: 50% !important;
 }
+
+ion-icon.add-group {
+
+    font-size: 100px;
+    margin: auto;
+}

@@ -10,16 +10,15 @@ import firebaseConfig from './config/firebase';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 
-import EditUserProfile from './components/EditUserProfile';
-import Group from './components/Group';
-import Groups from './components/Groups';
-import Links from './components/Links';
-import Login from './components/Login';
+import EditUserProfile from './pages/EditUserProfile';
+import Group from './pages/Group';
+import Groups from './pages/Groups';
+import Links from './pages/Links';
+import Login from './pages/Login';
 import Messages from './components/Messages';
-import ResetPassword from './components/ResetPassword';
+import ResetPassword from './pages/ResetPassword';
 import SideMenu from './components/SideMenu';
-import UserProfile from './components/UserProfile';
-import Users from './components/Users';
+import Users from './pages/Users';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -48,7 +47,7 @@ const App: React.FC = () => {
         firebase.initializeApp (firebaseConfig);
     }
 	
-	const [user, loading] = useAuthState (firebase.auth ());
+	const [user, loading, error] = useAuthState (firebase.auth ());
 
 	return (
 		<IonApp>
@@ -74,14 +73,15 @@ const App: React.FC = () => {
 					<IonReactRouter>
 						<SideMenu />
 						<IonRouterOutlet id="main">
-							<Route path="/edit-user-profile" exact component={EditUserProfile} />
+							<Route path="/edit-user-profile" exact >
+								<EditUserProfile user={user} />	
+							</Route>
 							<Route path="/groups/:id" exact component={Group} />
 							<Route path="/groups" exact component={Groups} />
 							<Route path="/messages" exact component={Messages} />
 							<Route path="/links" exact component={Links} />
 							<Route path="/users" exact component={Users} />
-							<Route path="/users/:id" exact component={UserProfile} />
-							<Redirect path="" to="/links" exact/>
+							<Redirect path="" to="/groups" exact/>
 						</IonRouterOutlet>
 					</IonReactRouter>
 				)

@@ -26,14 +26,27 @@ const Login: React.FC = () => {
             return;
         }
         
-        firebase.auth ().signInWithEmailAndPassword (enteredEmail, enteredPassword).catch ((err) => {
+        firebase.firestore ().collection ("users").where ('email', '==', enteredEmail).get ().then ( (querySnapshot) => {
+
+            if (querySnapshot.size === 1) {
+
+                firebase.auth ().signInWithEmailAndPassword (enteredEmail!, enteredPassword!).catch ((err) => {
+                    
+                    let message = "Error desconocido.";
+                    if (err.code === 'auth/too-many-requests') message = "Cuenta bloqueada por demasiados intentos fallidos de login.";
+                    else if (err.code === 'auth/wrong-password') message = "Contraseña incorrecta.";
+                    else if (err.message !== '') message = err.message;
+                    setErrorMsg (message);
+                });
+            } else {
+                setErrorMsg ("No existe el e-mail en la plataforma");
+            }
             
-            let message = "Error desconocido.";
-            if (err.code === 'auth/too-many-requests') message = "Cuenta bloqueada por demasiados intentos fallidos de login.";
-            else if (err.code === 'auth/wrong-password') message = "Contraseña incorrecta.";
-            else if (err.message !== '') message = err.message;
-            setErrorMsg (message);
+        }).catch ( (err) => {
+            
+            console.log (err);
         });
+
     }
 
 
