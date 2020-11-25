@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
 import { base64FromPath } from '@ionic/react-hooks/filesystem';
-import { useParams } from 'react-router';
-import { IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { RouteComponentProps } from 'react-router';
+import { IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar, useIonViewDidEnter } from '@ionic/react';
 import { add, send } from 'ionicons/icons';
 
 import EditGroupModal from '../components/EditGroupModal';
@@ -12,11 +12,15 @@ import 'firebase/firestore';
 import 'firebase/storage';
 
 
-const Group: React.FC = () => {
+interface UserDetailPageProps extends RouteComponentProps<{
+    id: string;
+}> {};
+const Group: React.FC<UserDetailPageProps> = ({match}) => {
 
-    const { id }                  = useParams <any> ();
+    const id = match.params.id;
     const [group, loading, error] = useDocumentData <any> (firebase.firestore ().collection ("groups").doc (id), {idField: 'id'});
-  
+    
+    
     const [isEditing, setIsEditing] = useState<boolean> (false);
     
     const cancelEditGroup = () => {
@@ -66,12 +70,7 @@ const Group: React.FC = () => {
 
     return (
         <IonPage>
-            <EditGroupModal 
-                show={isEditing}
-                onCancel={cancelEditGroup}
-                onSave={saveGroup}
-                editGroup={group}
-            />
+            
             {
 				loading && (
 					<IonLoading isOpen={loading}></IonLoading>
@@ -80,6 +79,12 @@ const Group: React.FC = () => {
 			{
 				(! loading ) && (
                     <React.Fragment>
+                        <EditGroupModal 
+                            show={isEditing}
+                            onCancel={cancelEditGroup}
+                            onSave={saveGroup}
+                            editGroup={group}
+                        />
                         <IonHeader>
                             <IonToolbar class="ion-text-center">
                                 <IonButtons slot="start">

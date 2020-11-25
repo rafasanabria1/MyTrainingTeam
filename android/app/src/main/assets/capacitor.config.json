@@ -9,5 +9,11 @@
       "launchShowDuration": 0
     }
   },
-  "cordova": {}
+  "cordova": {},
+  "server": {
+    "allowNavigation": [
+      "http://localhost:8100/",
+      "capacitor://localhost:8100"
+    ]
+  }
 }

@@ -18,6 +18,8 @@ const EditGroupModal: React.FC<{
     editGroup: any
 }> = props => {
 
+    const [isDeleting, setIsDeleting] = useState<boolean> (false);
+
     const [errorMsg, setErrorMsg] = useState<string> ('');
 
     const [photo, setPhoto]         = useState<{path: string, preview: string}> ();
@@ -25,6 +27,10 @@ const EditGroupModal: React.FC<{
     const nameRef        = useRef<HTMLIonInputElement> (null);
     const descriptionRef = useRef<HTMLIonTextareaElement> (null);
     
+    const deleteGroupHandler = () => {
+
+        setIsDeleting (true);
+    };
     const takePhotoHandler = () => {
 
         Camera.getPhoto ({
@@ -111,7 +117,17 @@ const EditGroupModal: React.FC<{
                                 <IonLabel>Cancelar</IonLabel>
                             </IonButton>
                         </IonButtons>
-                        <IonTitle>Crear Grupo</IonTitle>
+                        <IonTitle>{props.editGroup ? 'Actulizar' : 'Crear' } Grupo</IonTitle>
+                        {
+                            props.editGroup && (
+
+                                <IonButtons slot="end">
+                                    <IonButton onClick={deleteGroupHandler} color="danger">
+                                        <IonLabel>Eliminar</IonLabel>
+                                    </IonButton>
+                                </IonButtons>
+                            )
+                        }
                     </IonToolbar>
                 </IonHeader>
                 <IonContent fullscreen >
@@ -144,12 +160,10 @@ const EditGroupModal: React.FC<{
                             </IonLabel>
                         </IonItem>
                     )}
-                </IonContent>
-                <IonFooter>
                     <IonButton color="primary" expand="block" onClick={saveHandler}>
                         <IonLabel>{ props.editGroup ? 'Actualizar' : 'Crear' } grupo</IonLabel>
                     </IonButton>
-                </IonFooter>
+                </IonContent>
             </IonPage>
         </IonModal>
     );

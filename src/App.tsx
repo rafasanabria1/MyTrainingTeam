@@ -60,7 +60,7 @@ const App: React.FC = () => {
 				(! loading && user === null) && (
 			
 					<IonReactRouter>
-						<IonRouterOutlet id="main">
+						<IonRouterOutlet id="main2">
 							<Route path="/login" exact component={Login} />
 							<Route path="/reset-password" exact component={ResetPassword} />
 							<Redirect path="" to="/login" />
