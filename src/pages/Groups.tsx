@@ -9,6 +9,7 @@ import EditGroupModal from '../components/EditGroupModal';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/storage';
+import { Link } from 'react-router-dom';
 
 const Groups: React.FC = () => {
     
@@ -87,17 +88,19 @@ const Groups: React.FC = () => {
                         {
                             groups?.map ( (groupDoc: any) => (
                             
-                                <IonCard key={groupDoc.id} routerLink={`/groups/${groupDoc.id}`}>
-                                    { groupDoc.groupImg && (
-                                        <img src={groupDoc.groupImg} alt={groupDoc.name} />
-                                    )}
-                                    <IonCardHeader>
-                                        <IonCardTitle>{groupDoc.name}</IonCardTitle>
-                                    </IonCardHeader>
-                                    <IonCardContent>
-                                        {groupDoc.description}
-                                    </IonCardContent>
-                                </IonCard>
+                                <Link to={`/groups/detail/${groupDoc.id}`} key={groupDoc.id}>
+                                    <IonCard>
+                                        { groupDoc.groupImg && (
+                                            <img src={groupDoc.groupImg} alt={groupDoc.name} />
+                                        )}
+                                        <IonCardHeader>
+                                            <IonCardTitle>{groupDoc.name}</IonCardTitle>
+                                        </IonCardHeader>
+                                        <IonCardContent>
+                                            {groupDoc.description}
+                                        </IonCardContent>
+                                    </IonCard>
+                                </Link>
                             ))
                         }
                     </IonContent>

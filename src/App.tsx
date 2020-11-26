@@ -76,11 +76,11 @@ const App: React.FC = () => {
 							<Route path="/edit-user-profile" exact >
 								<EditUserProfile user={user} />	
 							</Route>
-							<Route path="/groups/:id" exact component={Group} />
-							<Route path="/groups" exact component={Groups} />
 							<Route path="/messages" exact component={Messages} />
 							<Route path="/links" exact component={Links} />
 							<Route path="/users" exact component={Users} />
+							<Route path="/groups" exact component={Groups} />
+				            <Route path="/groups/detail/:groupid" component={Group} />
 							<Redirect path="" to="/groups" exact/>
 						</IonRouterOutlet>
 					</IonReactRouter>
