@@ -18,18 +18,12 @@ const Links: React.FC = () => {
                     <IonItem routerLink="/users">
                         <IonLabel>Lista de usuarios</IonLabel>
                     </IonItem>
-                    <IonItem routerLink="/users/asdf">
-                        <IonLabel>Detalle de usuario</IonLabel>
-                    </IonItem>
                     <IonItem routerLink="/groups">
                         <IonLabel>Lista de grupos</IonLabel>
                     </IonItem>
                     <IonItem routerLink="/groups/asdf">
                         <IonLabel>Detalle de grupo</IonLabel>
                     </IonItem>
-                    {/* <IonItem routerLink="/messages">
-                        <IonLabel>Entrada de mensajes</IonLabel>
-                    </IonItem> */}
                     <IonItem routerLink="/edit-user-profile">
                         <IonLabel>Editar perfil</IonLabel>
                     </IonItem>

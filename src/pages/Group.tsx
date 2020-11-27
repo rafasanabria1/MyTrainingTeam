@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base64FromPath } from '@ionic/react-hooks/filesystem';
-import { RouteComponentProps } from 'react-router-dom';
-import { IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
+import { IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonRouterOutlet, IonRow, IonTitle, IonToolbar } from '@ionic/react';
 import { add, send } from 'ionicons/icons';
 
 import { useDocumentData } from 'react-firebase-hooks/firestore';
@@ -12,13 +12,12 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/storage';
 
-interface GroupsIdProps extends RouteComponentProps<{
+interface GroupIdProps extends RouteComponentProps<{
     groupid: string;
 }> {}
-const Group: React.FC<GroupsIdProps> = ({match}) => {
+const Group: React.FC<GroupIdProps> = ({match}) => {
 
-    const groupid = match.params.groupid;    
-    const [group, loading, error] = useDocumentData<any> (firebase.firestore ().doc ("/groups/" + groupid), {idField: 'id'});
+    const [group, loading] = useDocumentData<any> (firebase.firestore ().doc ("/groups/" + match.params.groupid), {idField: 'id'});
 
     const [isEditing, setIsEditing] = useState<boolean> (false);
     
@@ -75,6 +74,13 @@ const Group: React.FC<GroupsIdProps> = ({match}) => {
 					<IonLoading isOpen={loading !!}></IonLoading>
 				)
 			}
+            {
+                ! loading && ! group && (
+                    <IonRouterOutlet>
+                        <Redirect path="" to="/groups" />
+                    </IonRouterOutlet>
+                )
+            }
 			{
 				! loading && group && (
                     <React.Fragment>

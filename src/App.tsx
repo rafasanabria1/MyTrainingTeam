@@ -1,14 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Route } from 'react-router-dom';
 import { IonApp, IonLoading, IonRouterOutlet  } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect } from 'react-router-dom';
-import { useAuthState } from 'react-firebase-hooks/auth';
 
-
-import firebaseConfig from './config/firebase';
-import firebase from 'firebase/app';
-import 'firebase/auth';
+import MTTContext from './MTTContext';
 
 import EditUserProfile from './pages/EditUserProfile';
 import Group from './pages/Group';
@@ -18,6 +14,7 @@ import Login from './pages/Login';
 import Messages from './components/Messages';
 import ResetPassword from './pages/ResetPassword';
 import SideMenu from './components/SideMenu';
+import User from './pages/User';
 import Users from './pages/Users';
 
 /* Core CSS required for Ionic components to work properly */
@@ -43,21 +40,16 @@ import './theme/theme.css';
 
 const App: React.FC = () => {
 
-	if (! firebase.apps.length) {
-        firebase.initializeApp (firebaseConfig);
-    }
-	
-	const [user, loading, error] = useAuthState (firebase.auth ());
-
+	const MTT_ctx = useContext (MTTContext);
 	return (
 		<IonApp>
 			{
-				loading && (
-					<IonLoading isOpen={loading}></IonLoading>
+				MTT_ctx.loadingUser && (
+					<IonLoading isOpen={MTT_ctx.loadingUser}></IonLoading>
 				)
 			}
 			{
-				(! loading && user === null) && (
+				(! MTT_ctx.loadingUser && MTT_ctx.user === null) && (
 			
 					<IonReactRouter>
 						<IonRouterOutlet id="main2">
@@ -69,16 +61,17 @@ const App: React.FC = () => {
 				)
 			}
 			{
-				(! loading && user !== null) && (
+				(! MTT_ctx.loadingUser && MTT_ctx.user !== null) && (
 					<IonReactRouter>
 						<SideMenu />
 						<IonRouterOutlet id="main">
 							<Route path="/edit-user-profile" exact >
-								<EditUserProfile user={user} />	
+								<EditUserProfile/>	
 							</Route>
 							<Route path="/messages" exact component={Messages} />
 							<Route path="/links" exact component={Links} />
 							<Route path="/users" exact component={Users} />
+							<Route path="/users/detail/:userid" component={User} />
 							<Route path="/groups" exact component={Groups} />
 				            <Route path="/groups/detail/:groupid" component={Group} />
 							<Redirect path="" to="/groups" exact/>

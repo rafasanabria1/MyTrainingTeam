@@ -1,9 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonModal, IonPage, IonProgressBar, IonTextarea, IonTitle, IonToolbar } from '@ionic/react';
+import { IonAlert, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonModal, IonPage, IonTextarea, IonTitle, IonToolbar } from '@ionic/react';
 import { imageOutline } from 'ionicons/icons';
 
 import { Plugins, CameraResultType, CameraSource, CameraDirection } from '@capacitor/core';
-
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
@@ -27,36 +26,26 @@ const EditGroupModal: React.FC<{
     const nameRef        = useRef<HTMLIonInputElement> (null);
     const descriptionRef = useRef<HTMLIonTextareaElement> (null);
     
+    const cancelDeleteGroup = () => {
+
+        setIsDeleting (false);
+    }
+
+    const deleteGroup = () => {
+
+        firebase.firestore ().collection ("groups").doc (props.editGroup.id).delete ().catch ( (err) => {
+
+            cancelDeleteGroup ();
+            console.log (err);
+        });
+    };
+
+
     const deleteGroupHandler = () => {
 
         setIsDeleting (true);
     };
-    const takePhotoHandler = () => {
-
-        Camera.getPhoto ({
-            resultType: CameraResultType.Uri,
-            source: CameraSource.Prompt,
-            direction: CameraDirection.Front,
-            quality: 80,
-            width: 500,
-            promptLabelHeader: 'Seleccionar foto de perfil',
-            promptLabelCancel: 'Cancelar',
-            promptLabelPhoto: 'Abrir galería',
-            promptLabelPicture: 'Abrir cámara'
-            
-        }).then ( (photo) => {
-            if (! photo || ! photo.webPath) return;
-            
-            setPhoto (
-                {
-                    path: photo.path!,
-                    preview: photo.webPath!
-                }
-            );
-        });;
-    };
-
-
+    
     const saveHandler = () => {
 
         if (nameRef.current?.value === undefined || 
@@ -107,8 +96,49 @@ const EditGroupModal: React.FC<{
         props.onSave (group);
     };
 
+    const takePhotoHandler = () => {
+
+        Camera.getPhoto ({
+            resultType: CameraResultType.Uri,
+            source: CameraSource.Prompt,
+            direction: CameraDirection.Front,
+            quality: 80,
+            width: 500,
+            promptLabelHeader: 'Seleccionar foto de perfil',
+            promptLabelCancel: 'Cancelar',
+            promptLabelPhoto: 'Abrir galería',
+            promptLabelPicture: 'Abrir cámara'
+            
+        }).then ( (photo) => {
+            if (! photo || ! photo.webPath) return;
+            
+            setPhoto (
+                {
+                    path: photo.path!,
+                    preview: photo.webPath!
+                }
+            );
+        });;
+    };
+
+
     return (
         <IonModal isOpen={props.show} swipeToClose={false}>
+            <IonAlert isOpen={isDeleting} header={`Eliminar grupo ${props.editGroup?.name}`} message={'Esta acción no podrá deshacerse'}
+                onDidDismiss={ () => cancelDeleteGroup } buttons={
+                    [
+                        {
+                            text: 'Cancelar',
+                            role: 'cancel',
+                            cssClass: 'secondary',
+                            handler: () => { cancelDeleteGroup (); }
+                        },
+                            {
+                            text: 'Si, borrar',
+                            handler: () => { deleteGroup (); }
+                        }  
+                    ]}
+            />
             <IonPage>
                 <IonHeader>
                     <IonToolbar class="ion-text-center">
@@ -118,16 +148,11 @@ const EditGroupModal: React.FC<{
                             </IonButton>
                         </IonButtons>
                         <IonTitle>{props.editGroup ? 'Actulizar' : 'Crear' } Grupo</IonTitle>
-                        {
-                            props.editGroup && (
-
-                                <IonButtons slot="end">
-                                    <IonButton onClick={deleteGroupHandler} color="danger">
-                                        <IonLabel>Eliminar</IonLabel>
-                                    </IonButton>
-                                </IonButtons>
-                            )
-                        }
+                        <IonButtons slot="end">
+                            <IonButton onClick={saveHandler}>
+                                <IonLabel>Guardar</IonLabel>
+                            </IonButton>
+                        </IonButtons>
                     </IonToolbar>
                 </IonHeader>
                 <IonContent fullscreen >
@@ -160,9 +185,14 @@ const EditGroupModal: React.FC<{
                             </IonLabel>
                         </IonItem>
                     )}
-                    <IonButton color="primary" expand="block" onClick={saveHandler}>
-                        <IonLabel>{ props.editGroup ? 'Actualizar' : 'Crear' } grupo</IonLabel>
-                    </IonButton>
+                    {
+                        props.editGroup && (
+
+                            <IonButton color="danger" expand="block" onClick={deleteGroupHandler}>
+                                <IonLabel>Eliminar grupo</IonLabel>
+                            </IonButton>
+                        )
+                    }
                 </IonContent>
             </IonPage>
         </IonModal>

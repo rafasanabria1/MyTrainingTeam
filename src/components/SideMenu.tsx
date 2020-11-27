@@ -37,12 +37,7 @@ const SideMenu: React.FC = () => {
                         <IonItem button routerLink="/links" routerDirection="none" lines="none">
                             <IonIcon icon={linkOutline} slot="start"/>
                             <IonLabel>Lista de enlaces</IonLabel>
-                        </IonItem>
-                        <IonItem button routerLink="/groups/detail/Y8fDpo5pSjkDRof9JlwC" routerDirection="none" lines="none">
-                            <IonIcon icon={linkOutline} slot="start"/>
-                            <IonLabel>PRUEBA</IonLabel>
-                        </IonItem>
-                        
+                        </IonItem>                        
                         <IonButton fill="clear" onClick={logout} className="ion-text-center" expand="full">
                             <IonIcon icon={exitOutline} slot="start"/>
                             <IonLabel>Cerrar sesión</IonLabel>

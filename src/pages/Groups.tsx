@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 
 const Groups: React.FC = () => {
     
-    const [groups, loading, error]          = useCollectionData (firebase.firestore ().collection ('groups').orderBy ('createAt', 'desc'), {idField: 'id'});
+    const [groups, loading]                 = useCollectionData (firebase.firestore ().collection ('groups').orderBy ('createAt', 'desc'), {idField: 'id'});
     const [isEditing, setIsEditing]         = useState<boolean> (false);
     const [selectedGroup, setSelectedGroup] = useState<any> (null);
 

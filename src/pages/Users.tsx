@@ -1,6 +1,6 @@
-import { IonAlert, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonList, IonLoading, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonAlert, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonList, IonLoading, IonMenuButton, IonPage, IonRouterOutlet, IonTitle, IonToolbar } from '@ionic/react';
 import { add, pencil, trash } from 'ionicons/icons';
-import React, { useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 
 import EditUserModal from '../components/EditUserModal'
 
@@ -10,6 +10,8 @@ import firebase from 'firebase/app';
 import firebaseConfig from '../config/firebase';
 import 'firebase/firestore';
 import 'firebase/storage';
+import MTTContext from '../MTTContext';
+import { Redirect } from 'react-router';
 
 const Users: React.FC = () => {
 
@@ -20,7 +22,9 @@ const Users: React.FC = () => {
         firebaseSecondary = firebase.app ('secondary');
     }
 
-    const [users, loading, error]         = useCollectionData (firebase.firestore ().collection ('users').orderBy ('name'), {idField: 'id'});
+    const MTT_ctx = useContext (MTTContext);
+    
+    const [users, loading]                = useCollectionData (firebase.firestore ().collection ('users').orderBy ('name'), {idField: 'id'});
     const [isDeleting, setIsDeleting]     = useState<boolean> (false);
     const [isEditing, setIsEditing]       = useState<boolean> (false);
     const [selectedUser, setSelectedUser] = useState<any> (null);
@@ -132,6 +136,13 @@ const Users: React.FC = () => {
                     )
                 }
                 {
+                    ! loading && MTT_ctx.userData.rol !== 'Administrador' && (
+                        <IonRouterOutlet>
+                            <Redirect path="" to="/groups" />
+                        </IonRouterOutlet>
+                    )
+                }
+                {
                     ! loading && (
 
                         <React.Fragment>
@@ -156,7 +167,7 @@ const Users: React.FC = () => {
                                                         <IonIcon icon={pencil} onClick={ () => startEditUser (userDoc)} />
                                                     </IonItemOption>
                                                 </IonItemOptions>
-                                                <IonItem lines="full">
+                                                <IonItem lines="full" routerLink={`/users/detail/${userDoc.id}`}>
                                                         { userDoc.name } { userDoc.surname }
                                                     
                                                 </IonItem>

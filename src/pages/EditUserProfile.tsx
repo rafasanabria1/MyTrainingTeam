@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonDatetime, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonPage, IonProgressBar, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
+import React, { useContext, useRef, useState } from 'react';
+import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonProgressBar, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
 
 import { useHistory } from 'react-router';
 
@@ -8,23 +8,21 @@ import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
 
-import moment from 'moment';
-
 import { Plugins, CameraResultType, CameraSource, CameraDirection } from '@capacitor/core';
 import { base64FromPath } from '@ionic/react-hooks/filesystem';
+import MTTContext from '../MTTContext';
+
+import { formatDate } from '../Helpers'
 
 const { Camera } = Plugins;
 
-const EditUserProfile: React.FC<{
-    user: any
-}> = props => {
+const EditUserProfile: React.FC = () => {
     
     const [showAlert, setShowAlert]           = useState<boolean> (false);
     const [errorMsg, setErrorMsg]             = useState<string> ('');
     const [profileSuccess, setProfileSuccess] = useState<boolean> (false);
     const [uploading, setUploading]           = useState<number> (0);
     const [photo, setPhoto]                   = useState<{path: string, preview: string}> ();
-    const [profileImg, setProfileImg]         = useState<string> ('assets/images/avatar.svg');
     const history                             = useHistory ();
 
     const nameRef         = useRef<HTMLIonInputElement> (null);
@@ -34,30 +32,10 @@ const EditUserProfile: React.FC<{
     const oldPasswordRef  = useRef<HTMLIonInputElement> (null);
     const newPassword1Ref = useRef<HTMLIonInputElement> (null);
     const newPassword2Ref = useRef<HTMLIonInputElement> (null);
-    const createAtRef     = useRef<HTMLSpanElement> (null);
 
-    var profileImgRef:any = null;
+    const MTT_ctx = useContext (MTTContext);
     
-    firebase.firestore ().collection ('users').doc (props.user.uid).get ().then ( (doc) => {
-
-        if (doc.exists) {
-
-            nameRef.current!.value         = doc.get ('name');
-            surnameRef.current!.value      = doc.get ('surname');
-            genderRef.current!.value       = doc.get ('gender');
-            weightRef.current!.value       = doc.get ('weight');
-            createAtRef.current!.innerHTML = moment (new firebase.firestore.Timestamp (doc.get ('createAt').seconds, doc.get ('createAt').nanoseconds).toDate ()).format ('DD/MM/YYYY');
-            setProfileImg (doc.get ('profileImg'));
-            
-            profileImgRef = firebase.storage ().ref ().child('profile-images/' + props.user.uid);
-        } 
-
-    }).catch ( (err) => {
-
-        console.log (err);
-    });
-    
-
+    const profileImgRef = firebase.storage ().ref ().child('profile-images/' + MTT_ctx.user.uid);        
 
     const takePhotoHandler = () => {
 
@@ -119,10 +97,10 @@ const EditUserProfile: React.FC<{
             return;
         }
         
-        const credential = firebase.auth.EmailAuthProvider.credential (props.user.email, enteredOldPassword!);
-        props.user.reauthenticateWithCredential (credential).then ( () => {
+        const credential = firebase.auth.EmailAuthProvider.credential (MTT_ctx.user.email, enteredOldPassword!);
+        MTT_ctx.user.reauthenticateWithCredential (credential).then ( () => {
 
-            props.user.updatePassword (enteredNewPassword1!).then ( () => {
+            MTT_ctx.user.updatePassword (enteredNewPassword1!).then ( () => {
 
                 setShowAlert (true);
             }).catch ( () => {
@@ -164,7 +142,7 @@ const EditUserProfile: React.FC<{
                     profileImgRefUpload.snapshot.ref.getDownloadURL ().then ( (url:any) => {
                         
                         updateObject.profileImg = url;
-                        firebase.firestore ().collection ("users").doc (props.user.uid).update (updateObject).then ( () => {
+                        firebase.firestore ().collection ("users").doc (MTT_ctx.user.uid).update (updateObject).then ( () => {
                 
                             setProfileSuccess (true);
                         }).catch ( (err) => {
@@ -180,107 +158,120 @@ const EditUserProfile: React.FC<{
         }
     };
 
-
     return (
         <IonPage>
-            <IonHeader>
-                <IonToolbar className="ion-text-center">
-                    <IonButtons slot="start">
-                        <IonBackButton defaultHref="/groups" text=""/>
-                    </IonButtons>
-                    <IonTitle>Perfil</IonTitle>
-                    <IonButtons slot="end">
-                        <IonButton size="small" onClick={updateProfile}>
-                            <IonLabel>Guardar</IonLabel>
-                        </IonButton>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
-            <IonContent fullscreen>
-                <IonAlert isOpen={showAlert} header="Contraseña modificada" message={'Debe volver a iniciar sesión'}
-                            buttons={[{text: 'Ok', handler: passwordChanged }]} />
-                <IonToast isOpen={profileSuccess} message="Perfil actualizado correctamente" color="success" position="bottom" duration={1500} onDidDismiss={ () => { setProfileSuccess (false); }} />
-                <IonGrid>
-                    <IonRow className="ion-margin-vertical">
-                        <IonCol size="4" offset="4" className="ion-text-center img-edit-profile">
-                            {! photo &&  (
-                                <img src={profileImg} onClick={takePhotoHandler} alt={props.user.name} />
-                            )}
-                            {photo && (
-                                <img src={photo.preview}  onClick={takePhotoHandler} alt={props.user.name} />
-                            )}
-                            { (uploading > 0 && uploading < 1) && (
+            {
+                MTT_ctx.loadingUser && (
+                    <IonLoading isOpen={MTT_ctx.loadingUser} />
+                )
+            }
+            {
+                ! MTT_ctx.loadingUser && (
+                    <React.Fragment>
+                        <IonHeader>
+                            <IonToolbar className="ion-text-center">
+                                <IonButtons slot="start">
+                                    <IonBackButton defaultHref="/groups" text=""/>
+                                </IonButtons>
+                                <IonTitle>Perfil</IonTitle>
+                                <IonButtons slot="end">
+                                    <IonButton size="small" onClick={updateProfile}>
+                                        <IonLabel>Guardar</IonLabel>
+                                    </IonButton>
+                                </IonButtons>
+                            </IonToolbar>
+                        </IonHeader>
+                        <IonContent fullscreen>
+                            <IonAlert isOpen={showAlert} header="Contraseña modificada" message={'Debe volver a iniciar sesión'}
+                                        buttons={[{text: 'Ok', handler: passwordChanged }]} />
+                            <IonToast isOpen={profileSuccess} message="Perfil actualizado correctamente" color="success" position="bottom" duration={1500} onDidDismiss={ () => { setProfileSuccess (false); }} />
+                            <IonGrid>
+                                <IonRow className="ion-margin-vertical">
+                                    <IonCol size="4" offset="4" className="ion-text-center img-edit-profile">
+                                        { ! photo && MTT_ctx.userData.profileImg !== '' && (
+                                            <img src={MTT_ctx.userData.profileImg} onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
+                                        )}
+                                        { ! photo && ! MTT_ctx.userData.profileImg && (
+                                            <img src="assets/images/avatar.svg" onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
+                                        )}
+                                        { photo && (
+                                            <img src={photo.preview}  onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
+                                        )}
+                                        { (uploading > 0 && uploading < 1) && (
 
-                                <IonProgressBar value={uploading} />
-                                )
-                            }
-                        </IonCol>
-                    </IonRow>
-                    <IonRow>
-                        <IonCol>
-                            <IonListHeader className="ion-text-center">
-                                <IonLabel className="ion-no-margin-top">Información personal</IonLabel>
-                            </IonListHeader>
-                            <IonList>
-                                <IonItemGroup>
-                                    <IonItem>
-                                        <IonLabel>Nombre</IonLabel>
-                                        <IonInput ref={nameRef} placeholder="Nombre" className="ion-text-right"/>
-                                    </IonItem>
-                                    <IonItem>
-                                        <IonLabel>Apellidos</IonLabel>
-                                        <IonInput ref={surnameRef} placeholder="Apellidos" className="ion-text-right"/>
-                                    </IonItem>
-                                    <IonItem>
-                                        <IonLabel>Sexo</IonLabel>
-                                        <IonSelect ref={genderRef} placeholder="Sexo" className="ion-text-right">
-                                            <IonSelectOption value="Femenino">Femenino</IonSelectOption>
-                                            <IonSelectOption value="Masculino">Masculino</IonSelectOption>
-                                            <IonSelectOption value="Otro">Otro</IonSelectOption>
-                                        </IonSelect>
-                                    </IonItem>
-                                    <IonItem lines="none">
-                                        <IonLabel>Peso (Kg)</IonLabel>
-                                        <IonInput type="number" ref={weightRef} placeholder="Peso (Kg)" className="ion-text-right" />
-                                    </IonItem>
-                                </IonItemGroup>
-                            </IonList>
-                            <IonListHeader className="ion-text-center">
-                                <IonLabel>Credenciales</IonLabel>
-                            </IonListHeader>
-                            <IonItem>
-                                <IonLabel>Contraseña actual</IonLabel>
-                                <IonInput type="password" ref={oldPasswordRef} placeholder="Contraseña actual" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
+                                            <IonProgressBar value={uploading} />
+                                            )
+                                        }
+                                    </IonCol>
+                                </IonRow>
+                                <IonRow>
+                                    <IonCol>
+                                        <IonListHeader className="ion-text-center">
+                                            <IonLabel className="ion-no-margin-top">Información personal</IonLabel>
+                                        </IonListHeader>
+                                        <IonList>
+                                            <IonItemGroup>
+                                                <IonItem>
+                                                    <IonLabel>Nombre</IonLabel>
+                                                    <IonInput ref={nameRef} placeholder="Nombre" className="ion-text-right" value={MTT_ctx.userData.name}/>
+                                                </IonItem>
+                                                <IonItem>
+                                                    <IonLabel>Apellidos</IonLabel>
+                                                    <IonInput ref={surnameRef} placeholder="Apellidos" className="ion-text-right" value={MTT_ctx.userData.surname}/>
+                                                </IonItem>
+                                                <IonItem>
+                                                    <IonLabel>Sexo</IonLabel>
+                                                    <IonSelect ref={genderRef} placeholder="Sexo" className="ion-text-right" value={MTT_ctx.userData.gender}>
+                                                        <IonSelectOption value="Femenino">Femenino</IonSelectOption>
+                                                        <IonSelectOption value="Masculino">Masculino</IonSelectOption>
+                                                        <IonSelectOption value="Otro">Otro</IonSelectOption>
+                                                    </IonSelect>
+                                                </IonItem>
+                                                <IonItem lines="none">
+                                                    <IonLabel>Peso (Kg)</IonLabel>
+                                                    <IonInput type="number" ref={weightRef} placeholder="Peso (Kg)" className="ion-text-right" value={MTT_ctx.userData.weight}/>
+                                                </IonItem>
+                                            </IonItemGroup>
+                                        </IonList>
+                                        <IonListHeader className="ion-text-center">
+                                            <IonLabel>Credenciales</IonLabel>
+                                        </IonListHeader>
+                                        <IonItem>
+                                            <IonLabel>Contraseña actual</IonLabel>
+                                            <IonInput type="password" ref={oldPasswordRef} placeholder="Contraseña actual" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
+                                        </IonItem>
+                                        <IonItem>
+                                            <IonLabel>Nueva contraseña</IonLabel>
+                                            <IonInput type="password" ref={newPassword1Ref} placeholder="Nueva contraseña" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
+                                        </IonItem>
+                                        <IonItem lines="none">
+                                            <IonLabel>Repetir contraseña</IonLabel>
+                                            <IonInput type="password" ref={newPassword2Ref} placeholder="Nueva contraseña" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
+                                        </IonItem>
+                                        { errorMsg!!! && (
+                                            <IonItem className="ion-text-center ion-no-margin ion-no-padding" lines="none">
+                                                <IonLabel color="danger" className="ion-text-wrap ion-no-margin ion-no-padding">
+                                                    {errorMsg}
+                                                </IonLabel>
+                                            </IonItem>
+                                        )}
+                                        <IonButton color="primary" expand="block" fill="outline" size="small" className="ion-no-margin-top" onClick={updatePassword} >
+                                            <IonLabel>Actualizar contraseña</IonLabel>
+                                        </IonButton>
+                                    </IonCol>
+                                </IonRow>
+                            </IonGrid>
+                        </IonContent>
+                        <IonFooter>
+                            <IonItem className="ion-text-center" lines="none">
+                                <IonLabel>
+                                    <p>Registrado el { formatDate (MTT_ctx.userData.createAt, 'DD/MM/YYYY') }</p>
+                                </IonLabel>
                             </IonItem>
-                            <IonItem>
-                                <IonLabel>Nueva contraseña</IonLabel>
-                                <IonInput type="password" ref={newPassword1Ref} placeholder="Nueva contraseña" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
-                            </IonItem>
-                            <IonItem lines="none">
-                                <IonLabel>Repetir contraseña</IonLabel>
-                                <IonInput type="password" ref={newPassword2Ref} placeholder="Nueva contraseña" className="ion-text-right" onKeyUp={ () => { setErrorMsg (''); }}/>
-                            </IonItem>
-                            { errorMsg!!! && (
-                                <IonItem className="ion-text-center ion-no-margin ion-no-padding" lines="none">
-                                    <IonLabel color="danger" className="ion-text-wrap ion-no-margin ion-no-padding">
-                                        {errorMsg}
-                                    </IonLabel>
-                                </IonItem>
-                            )}
-                            <IonButton color="primary" expand="block" fill="outline" size="small" className="ion-no-margin-top" onClick={updatePassword} >
-                                <IonLabel>Actualizar contraseña</IonLabel>
-                            </IonButton>
-                        </IonCol>
-                    </IonRow>
-                </IonGrid>
-            </IonContent>
-            <IonFooter>
-                <IonItem className="ion-text-center" lines="none">
-                    <IonLabel>
-                        <p>Registrado el <span ref={createAtRef}></span></p>
-                    </IonLabel>
-                </IonItem>
-            </IonFooter>
+                        </IonFooter>
+                    </React.Fragment>
+                )
+            }
         </IonPage>
     );
 };
