@@ -1,17 +1,14 @@
-import { IonAlert, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonList, IonLoading, IonMenuButton, IonPage, IonRouterOutlet, IonTitle, IonToolbar } from '@ionic/react';
+import React, { useRef, useState } from 'react';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { IonAlert, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonList, IonLoading, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { add, pencil, trash } from 'ionicons/icons';
-import React, { useContext, useRef, useState } from 'react';
 
 import EditUserModal from '../components/EditUserModal'
-
-import { useCollectionData } from 'react-firebase-hooks/firestore';
 
 import firebase from 'firebase/app';
 import firebaseConfig from '../config/firebase';
 import 'firebase/firestore';
 import 'firebase/storage';
-import MTTContext from '../MTTContext';
-import { Redirect } from 'react-router';
 
 const Users: React.FC = () => {
 
@@ -22,8 +19,6 @@ const Users: React.FC = () => {
         firebaseSecondary = firebase.app ('secondary');
     }
 
-    const MTT_ctx = useContext (MTTContext);
-    
     const [users, loading]                = useCollectionData (firebase.firestore ().collection ('users').orderBy ('name'), {idField: 'id'});
     const [isDeleting, setIsDeleting]     = useState<boolean> (false);
     const [isEditing, setIsEditing]       = useState<boolean> (false);
@@ -136,13 +131,6 @@ const Users: React.FC = () => {
                     )
                 }
                 {
-                    ! loading && MTT_ctx.userData.rol !== 'Administrador' && (
-                        <IonRouterOutlet>
-                            <Redirect path="" to="/groups" />
-                        </IonRouterOutlet>
-                    )
-                }
-                {
                     ! loading && (
 
                         <React.Fragment>
@@ -169,7 +157,6 @@ const Users: React.FC = () => {
                                                 </IonItemOptions>
                                                 <IonItem lines="full" routerLink={`/users/detail/${userDoc.id}`}>
                                                         { userDoc.name } { userDoc.surname }
-                                                    
                                                 </IonItem>
                                                 <IonItemOptions side="end">
                                                     <IonItemOption color="danger">

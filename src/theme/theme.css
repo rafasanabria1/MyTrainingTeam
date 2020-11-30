@@ -78,3 +78,9 @@ ion-icon.add-group {
     font-size: 100px;
     margin: auto;
 }
+
+.list-title-mtt {
+
+    font-size: 22px !important;
+    font-weight: 700 !important;
+}

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Route } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import { IonApp, IonLoading, IonRouterOutlet  } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect } from 'react-router-dom';
@@ -41,6 +41,7 @@ import './theme/theme.css';
 const App: React.FC = () => {
 
 	const MTT_ctx = useContext (MTTContext);
+
 	return (
 		<IonApp>
 			{
@@ -53,9 +54,11 @@ const App: React.FC = () => {
 			
 					<IonReactRouter>
 						<IonRouterOutlet id="main2">
-							<Route path="/login" exact component={Login} />
-							<Route path="/reset-password" exact component={ResetPassword} />
-							<Redirect path="" to="/login" />
+							<Switch>
+								<Route path="/login" exact component={Login} />
+								<Route path="/reset-password" exact component={ResetPassword} />
+								<Redirect path="" to="/login" />
+							</Switch>
 						</IonRouterOutlet>
 					</IonReactRouter>
 				)
@@ -65,16 +68,18 @@ const App: React.FC = () => {
 					<IonReactRouter>
 						<SideMenu />
 						<IonRouterOutlet id="main">
-							<Route path="/edit-user-profile" exact >
-								<EditUserProfile/>	
-							</Route>
-							<Route path="/messages" exact component={Messages} />
-							<Route path="/links" exact component={Links} />
-							<Route path="/users" exact component={Users} />
-							<Route path="/users/detail/:userid" component={User} />
-							<Route path="/groups" exact component={Groups} />
-				            <Route path="/groups/detail/:groupid" component={Group} />
-							<Redirect path="" to="/groups" exact/>
+							<Switch>
+								<Route path="/edit-user-profile" exact >
+									<EditUserProfile/>	
+								</Route>
+								<Route path="/messages" exact component={Messages} />
+								<Route path="/links" exact component={Links} />
+								<Route path="/users/detail/:userid" component={User} />
+								<Route path="/users" exact component={Users} />
+								<Route path="/groups/detail/:groupid" component={Group} />
+								<Route path="/groups" exact component={Groups} />
+								<Redirect path="" to="/groups" exact/>
+							</Switch>
 						</IonRouterOutlet>
 					</IonReactRouter>
 				)

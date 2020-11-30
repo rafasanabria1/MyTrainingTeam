@@ -1,7 +1,7 @@
 import React from 'react';
-import { Redirect, RouteComponentProps } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router-dom';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonNote, IonPage, IonRouterOutlet, IonTitle, IonToolbar } from '@ionic/react';
+import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonNote, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
@@ -24,13 +24,6 @@ const User: React.FC<UserIdProps> = ({match}) => {
 				)
 			}
             {
-                ! loading && ! user && (
-                    <IonRouterOutlet>
-                        <Redirect path="" to="/users" />
-                    </IonRouterOutlet>
-                )
-            }
-			{
 				! loading && user && (
                     <React.Fragment>
                         <IonHeader>
@@ -72,6 +65,12 @@ const User: React.FC<UserIdProps> = ({match}) => {
                                         Cumpleaños:
                                     </IonLabel>
                                     <IonNote slot="end">{ formatDate (user.birthdate, 'DD MMMM') }</IonNote>
+                                </IonItem>
+                                <IonItem lines="full">
+                                    <IonLabel>
+                                        Rol:
+                                    </IonLabel>
+                                    <IonNote slot="end">{user.rol}</IonNote>
                                 </IonItem>
                                 <IonListHeader>
                                     <IonLabel color="secondary">Grupos a los que pertenece</IonLabel>

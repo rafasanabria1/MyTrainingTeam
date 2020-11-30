@@ -1,8 +1,6 @@
 import React, { useContext, useRef, useState } from 'react';
 import { IonAlert, IonBackButton, IonButton, IonButtons, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonProgressBar, IonRow, IonSelect, IonSelectOption, IonTitle, IonToast, IonToolbar } from '@ionic/react';
 
-import { useHistory } from 'react-router';
-
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
@@ -23,7 +21,6 @@ const EditUserProfile: React.FC = () => {
     const [profileSuccess, setProfileSuccess] = useState<boolean> (false);
     const [uploading, setUploading]           = useState<number> (0);
     const [photo, setPhoto]                   = useState<{path: string, preview: string}> ();
-    const history                             = useHistory ();
 
     const nameRef         = useRef<HTMLIonInputElement> (null);
     const surnameRef      = useRef<HTMLIonInputElement> (null);
@@ -65,10 +62,7 @@ const EditUserProfile: React.FC = () => {
 
     const passwordChanged = () => {
 
-        firebase.auth ().signOut ().then ( () => {
-    
-            history.push ('/login');
-        }).catch ( (err) => {
+        firebase.auth ().signOut ().catch ( (err) => {
     
             console.log (err);
         });
