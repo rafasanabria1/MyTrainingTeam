@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { base64FromPath } from '@ionic/react-hooks/filesystem';
@@ -10,12 +10,46 @@ import EditGroupModal from '../components/EditGroupModal';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/storage';
+import MTTContext from '../MTTContext';
 
 const Groups: React.FC = () => {
     
-    const [groups, loading]                 = useCollectionData (firebase.firestore ().collection ('groups').orderBy ('createAt', 'desc'), {idField: 'id'});
+    const MTT_ctx = useContext (MTTContext);
+
+    const [groupsFiltered, setGroupsFiltered] = useState<any []> ([]);
+
+    const [groups, loading]                 = useCollectionData<any> (firebase.firestore ().collection ('groups').orderBy ('createAt', 'desc'), {idField: 'id'});
     const [isEditing, setIsEditing]         = useState<boolean> (false);
     const [selectedGroup, setSelectedGroup] = useState<any> (null);
+    
+    useEffect ( () => {
+
+        let groupsFilteredAux:any [] = []; 
+        if (groups) {
+
+            groups!.forEach ( (group) => {
+                
+                if (MTT_ctx.userData.rol === 'Deportista') {
+                    
+                    if (group.athletes && group.athletes.includes (MTT_ctx.user.uid)) {
+    
+                        groupsFilteredAux.push (group);
+                    }
+                } else if (MTT_ctx.userData.rol === 'Entrenador') {
+    
+                    if (group.trainers && group.trainers.includes (MTT_ctx.user.uid)) {
+    
+                        groupsFilteredAux.push (group);
+                    }
+    
+                } else if (MTT_ctx.userData.rol === 'Administrador') {
+    
+                    groupsFilteredAux.push (group);
+                }
+            });
+        } 
+        setGroupsFiltered (groupsFilteredAux);
+    }, [groups, MTT_ctx]);
 
     const cancelEditGroup = () => {
         setIsEditing (false);
@@ -57,6 +91,7 @@ const Groups: React.FC = () => {
     };
 
 
+
     return (
         <IonPage>
             {
@@ -79,14 +114,19 @@ const Groups: React.FC = () => {
                                 <IonMenuButton />
                             </IonButtons>
                             <IonTitle>Grupos</IonTitle>
-                            <IonButtons slot="end">
-                                <IonIcon icon={add} slot="icon-only" onClick={ () => { setIsEditing (true); } }/>
-                            </IonButtons>
+                            {
+                                MTT_ctx.userData.rol !== 'Deportista' && (
+
+                                    <IonButtons slot="end">
+                                        <IonIcon icon={add} slot="icon-only" onClick={ () => { setIsEditing (true); } }/>
+                                    </IonButtons>
+                                )
+                            }
                         </IonToolbar>
                     </IonHeader>
                     <IonContent fullscreen>
                         {
-                            groups?.map ( (groupDoc: any) => (
+                            groupsFiltered?.map ( (groupDoc: any) => (
                             
                                 <Link to={`/groups/detail/${groupDoc.id}`} key={groupDoc.id}>
                                     <IonCard>

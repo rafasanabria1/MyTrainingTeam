@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { base64FromPath } from '@ionic/react-hooks/filesystem';
 import { IonAlert, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
@@ -20,11 +20,14 @@ import moment from 'moment';
 import ViewGoalModal from '../components/ViewGoalModal';
 
 import { Health } from '@ionic-native/health';
+import MTTContext from '../MTTContext';
 
 interface GroupIdProps extends RouteComponentProps<{
     groupid: string;
 }> {}
 const Group: React.FC<GroupIdProps|null> = ({match}) => {
+
+    const MTT_ctx = useContext (MTTContext);
 
     const groupDocRef      = firebase.firestore ().collection ("groups").doc (match.params.groupid);
     const [group, loading] = useDocumentData<any> (groupDocRef, {idField: 'id'});
@@ -391,11 +394,15 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                     <IonBackButton defaultHref="/groups" text=""/>
                                 </IonButtons>
                                 <IonTitle>{group.name}</IonTitle>
-                                <IonButtons slot="end">
-                                    <IonButton onClick={ () => { setIsEditing (true); }}>
-                                        <IonLabel>Editar</IonLabel>
-                                    </IonButton>
-                                </IonButtons>
+                                {
+                                    MTT_ctx.userData.rol !== 'Deportista' && (
+                                        <IonButtons slot="end">
+                                            <IonButton onClick={ () => { setIsEditing (true); }}>
+                                                <IonLabel>Editar</IonLabel>
+                                            </IonButton>
+                                        </IonButtons>
+                                    )
+                                }
                             </IonToolbar>
                         </IonHeader>
                         <IonContent fullscreen>
@@ -415,9 +422,13 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                     <IonLabel color="secondary" className="list-title-mtt">
                                         Profesores del grupo
                                     </IonLabel>
-                                    <IonButton onClick={addTrainerHandler} fill="clear">
-                                        <IonIcon icon={personAdd} slot="icon-only" color="primary" size="small"/>
-                                    </IonButton>
+                                    {
+                                        MTT_ctx.userData.rol !== 'Deportista' && (
+                                            <IonButton onClick={addTrainerHandler} fill="clear">
+                                                <IonIcon icon={personAdd} slot="icon-only" color="primary" size="small"/>
+                                            </IonButton>
+                                        )
+                                    }
                                 </IonItem>
                                 {
                                     currentTrainers && currentTrainers.length > 0 && (
@@ -426,9 +437,13 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                                 <IonLabel>
                                                     {trainer.label}
                                                 </IonLabel>
-                                                <IonButton onClick={ (e) => removeUserFromGroup ("Entrenador", trainer, e)} fill="clear" >
-                                                    <IonIcon icon={personRemove} slot="icon-only" color="danger" size="small"/>
-                                                </IonButton>
+                                                {
+                                                    MTT_ctx.userData.rol !== 'Deportista' && (
+                                                        <IonButton onClick={ (e) => removeUserFromGroup ("Entrenador", trainer, e)} fill="clear" >
+                                                            <IonIcon icon={personRemove} slot="icon-only" color="danger" size="small"/>
+                                                        </IonButton>
+                                                    )
+                                                }
                                             </IonItem>
                                         ))
                                     )
@@ -444,9 +459,13 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                     <IonLabel color="secondary" className="list-title-mtt">
                                         Deportistas del grupo
                                     </IonLabel>
-                                    <IonButton onClick={addAthleteHandler} fill="clear">
-                                        <IonIcon icon={personAdd} slot="icon-only" color="primary" size="small"/>
-                                    </IonButton>
+                                    {
+                                        MTT_ctx.userData.rol !== 'Deportista' && (
+                                            <IonButton onClick={addAthleteHandler} fill="clear">
+                                                <IonIcon icon={personAdd} slot="icon-only" color="primary" size="small"/>
+                                            </IonButton>
+                                        )
+                                    }
                                 </IonItem>
                                 {
                                     currentAthletes && currentAthletes.length > 0 && (
@@ -455,9 +474,13 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                                 <IonLabel>
                                                     {athlete.label}
                                                 </IonLabel>
-                                                <IonButton onClick={ (e) => removeUserFromGroup ("Deportista", athlete, e)} fill="clear"> 
-                                                    <IonIcon icon={personRemove} slot="icon-only" color="danger" size="small"/>
-                                                </IonButton>
+                                                {
+                                                    MTT_ctx.userData.rol !== 'Deportista' && (
+                                                        <IonButton onClick={ (e) => removeUserFromGroup ("Deportista", athlete, e)} fill="clear"> 
+                                                            <IonIcon icon={personRemove} slot="icon-only" color="danger" size="small"/>
+                                                        </IonButton>
+                                                    )
+                                                }
                                             </IonItem>
                                         ))
                                     )
@@ -471,9 +494,13 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                 }
                                 <IonListHeader>
                                     <IonLabel color="secondary">Objetivos actuales</IonLabel>
-                                    <IonButton onClick={addGoalHandler}>
-                                        <IonIcon icon={add} slot="icon-only" color="primary" />
-                                    </IonButton>
+                                    {
+                                        MTT_ctx.userData.rol !== 'Deportista' && (
+                                            <IonButton onClick={addGoalHandler}>
+                                                <IonIcon icon={add} slot="icon-only" color="primary" />
+                                            </IonButton>
+                                        )
+                                    }
                                 </IonListHeader>
                                 {
                                     currentGoals.length > 0 && currentGoals.map ( (goalDoc: any) => (
@@ -492,10 +519,14 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                             <IonGrid>
                                                 <IonRow>
                                                     <IonCol className="ion-text-left">
-                                                        <IonButton color="warning" expand="block" size="small" fill="clear" onClick={ () => editGoalHandler (goalDoc)}>
-                                                            <IonLabel>Editar</IonLabel>
-                                                            <IonIcon icon={pencil} slot="end"/>
-                                                        </IonButton>
+                                                        {
+                                                            MTT_ctx.userData.rol !== 'Deportista' && (
+                                                                <IonButton color="warning" expand="block" size="small" fill="clear" onClick={ () => editGoalHandler (goalDoc)}>
+                                                                    <IonLabel>Editar</IonLabel>
+                                                                    <IonIcon icon={pencil} slot="end"/>
+                                                                </IonButton>
+                                                            )
+                                                        }
                                                     </IonCol>
                                                     <IonCol className="ion-text-center">
                                                         <IonButton color="success" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
@@ -504,10 +535,14 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                                         </IonButton>
                                                     </IonCol>
                                                     <IonCol className="ion-text-right">
-                                                        <IonButton color="danger" expand="block" size="small" fill="clear" onClick={ () => deleteGoalHandler (goalDoc)}>
-                                                            <IonLabel>Eliminar</IonLabel>
-                                                            <IonIcon icon={trash} slot="end"/>
-                                                        </IonButton>
+                                                        {
+                                                            MTT_ctx.userData.rol !== 'Deportista' && (
+                                                                <IonButton color="danger" expand="block" size="small" fill="clear" onClick={ () => deleteGoalHandler (goalDoc)}>
+                                                                    <IonLabel>Eliminar</IonLabel>
+                                                                    <IonIcon icon={trash} slot="end"/>
+                                                                </IonButton>
+                                                            )
+                                                        }
                                                     </IonCol>
                                                 </IonRow>
                                             </IonGrid>
