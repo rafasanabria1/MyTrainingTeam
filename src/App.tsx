@@ -9,7 +9,6 @@ import MTTContext from './MTTContext';
 import EditUserProfile from './pages/EditUserProfile';
 import Group from './pages/Group';
 import Groups from './pages/Groups';
-import Links from './pages/Links';
 import Login from './pages/Login';
 import Messages from './components/Messages';
 import ResetPassword from './pages/ResetPassword';
@@ -73,9 +72,12 @@ const App: React.FC = () => {
 									<EditUserProfile/>	
 								</Route>
 								<Route path="/messages" exact component={Messages} />
-								<Route path="/links" exact component={Links} />
 								<Route path="/users/detail/:userid" component={User} />
-								<Route path="/users" exact component={Users} />
+								{
+									MTT_ctx.userData.rol === 'Administrador' && (
+										<Route path="/users" exact component={Users} />
+									)
+								}
 								<Route path="/groups/detail/:groupid" component={Group} />
 								<Route path="/groups" exact component={Groups} />
 								<Redirect path="" to="/groups" exact/>

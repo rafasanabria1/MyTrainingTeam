@@ -9,9 +9,14 @@ const ResetPassword: React.FC = () => {
                 <IonGrid>
                     <IonRow>
                         <IonCol>
-                            <IonItem>
-                                <IonLabel position="floating">E-mail</IonLabel>
-                                <IonInput type="email"></IonInput>
+                            <img src="assets/images/icon.png" alt="My Training Team" width="512px"/>
+                        </IonCol>
+                    </IonRow>
+                    <IonRow>
+                        <IonCol>
+                        <IonItem className="ion-no-padding ion-text-center">
+                                <IonLabel position="stacked">E-mail</IonLabel>
+                                <IonInput type="email" placeholder="E-mail" ></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>

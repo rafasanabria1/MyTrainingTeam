@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { base64FromPath } from '@ionic/react-hooks/filesystem';
-import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import { add, personAdd, personRemove } from 'ionicons/icons';
+import { IonAlert, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { add, eye, pencil, personAdd, personRemove, trash } from 'ionicons/icons';
 
 import { useCollectionData, useDocumentData } from 'react-firebase-hooks/firestore';
 
@@ -13,26 +13,48 @@ import 'firebase/firestore';
 import 'firebase/storage';
 
 import AddUserToGroupModal from '../components/AddUserToGroupModal';
+import EditGoalModal from '../components/EditGoalModal';
+
+import { formatDate } from '../Helpers';
+import moment from 'moment';
+import ViewGoalModal from '../components/ViewGoalModal';
+
+import { Health } from '@ionic-native/health';
 
 interface GroupIdProps extends RouteComponentProps<{
     groupid: string;
 }> {}
 const Group: React.FC<GroupIdProps|null> = ({match}) => {
 
-    const groupDocRef = firebase.firestore ().collection ("groups").doc (match.params.groupid);
-    const [isAddingUser, setIsAddingUser] = useState<boolean> (false);
-    const [usersAdd, setUsersAdd]         = useState<any []> ([]);
-    const [typeUserAdd, setTypeUserAdd]   = useState<string> ('');
+    const groupDocRef      = firebase.firestore ().collection ("groups").doc (match.params.groupid);
+    const [group, loading] = useDocumentData<any> (groupDocRef, {idField: 'id'});
 
+    const [trainers] = useCollectionData<any> (firebase.firestore ().collection ("users").where ('rol', '==', 'Entrenador'), {idField: 'id'});
+    const [athletes] = useCollectionData<any> (firebase.firestore ().collection ("users").where ('rol', '==', 'Deportista'), {idField: 'id'});
+
+    const [goals] = useCollectionData<any> (groupDocRef.collection ("goals"), {idField: 'id'});
+    const [currentGoals, setCurrentGoals] = useState<any[]> ([]);
+    const [pastGoals, setPastGoals] = useState<any[]> ([]);
+   
     const [allTrainers, setAllTrainers] = useState<any []> ([]);
     const [allAthletes, setAllAthletes] = useState<any []> ([]);
 
     const [currentTrainers, setCurrentTrainers] = useState<any []> ([]);
     const [currentAthletes, setCurrentAthletes] = useState<any []> ([]);
 
-    const [group, loading] = useDocumentData<any> (groupDocRef, {idField: 'id'});
-    const [trainers] = useCollectionData<any> (firebase.firestore ().collection ("users").where ('rol', '==', 'Entrenador'), {idField: 'id'});
-    const [athletes] = useCollectionData<any> (firebase.firestore ().collection ("users").where ('rol', '==', 'Athletes'), {idField: 'id'});
+    const [isAddingUser, setIsAddingUser] = useState<boolean> (false);
+    const [usersAdd, setUsersAdd]         = useState<any []> ([]);
+    const [typeUserAdd, setTypeUserAdd]   = useState<string> ('');
+
+    const [isEditing, setIsEditing] = useState<boolean> (false);
+
+    const [isEditingGoal, setIsEditingGoal] = useState<boolean> (false);
+    const [selectedGoal, setSelectedGoal]   = useState<any> (null);
+
+    const [isViewingGoal, setIsViewingGoal] = useState<boolean> (false);
+    
+    const [isDeletingGoal, setIsDeletingGoal] = useState<boolean> (false);
+
 
     useEffect ( () => {
 
@@ -84,9 +106,30 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
         setAllAthletes (allAthletesAux);
         setCurrentAthletes (currentAthletesAux);
     }, [athletes, group]);
-
-    const [isEditing, setIsEditing] = useState<boolean> (false);
     
+    useEffect ( () => {
+
+        let curGoals:any[]  = [];
+        let pasGoals:any[] = [];
+        if (goals && goals.length > 0) {
+
+            curGoals = goals.filter ( goal => {
+                
+                let enddate = moment (new firebase.firestore.Timestamp (goal.enddate.seconds, goal.enddate.nanoseconds).toDate ());
+                return enddate.isSameOrAfter (moment (), 'days');
+            } );
+
+            pasGoals = goals.filter ( goal => {
+
+                let enddate = moment (new firebase.firestore.Timestamp (goal.enddate.seconds, goal.enddate.nanoseconds).toDate ())
+                return enddate.isBefore (moment (), 'days');
+            });
+        }
+        setCurrentGoals (curGoals);
+        setPastGoals (pasGoals);
+
+    }, [goals]);
+
     const cancelEditGroup = () => {
 
         setIsEditing (false);
@@ -145,7 +188,7 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
         setUsersAdd (allTrainers!);
     };
 
-    const cancelAddingUser = () => {
+    const cancelAddingUserToGroup = () => {
 
         setTypeUserAdd ('');
         setIsAddingUser (false);
@@ -179,7 +222,7 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
         }
     }
 
-    const saveAddingUser = (userData:any) => {
+    const saveAddingUserToGroup = (userData:any) => {
 
         if (userData) {
 
@@ -189,11 +232,11 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                     athletes: firebase.firestore.FieldValue.arrayUnion (userData.value)
                 }).then ( () => {
                     
-                    cancelAddingUser ();
+                    cancelAddingUserToGroup ();
                 }).catch ( (err) => {
                     
                     console.log (err);
-                    cancelAddingUser ();
+                    cancelAddingUserToGroup ();
                 });
             } else {
                 
@@ -201,16 +244,97 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                     trainers: firebase.firestore.FieldValue.arrayUnion (userData.value)
                 }).then ( () => {
                     
-                    cancelAddingUser ();
+                    cancelAddingUserToGroup ();
                 }).catch ( (err) => {
                     
                     console.log (err);
-                    cancelAddingUser ();
+                    cancelAddingUserToGroup ();
                 });
             }
         }
     };
 
+    const addGoalHandler = () => {
+
+        setIsEditingGoal (true);
+        setSelectedGoal (null);
+    };
+
+    const cancelEditGoal = () => {
+
+        setIsEditingGoal (false);
+        setSelectedGoal (null);
+    }
+
+    const saveGoal = (goal:any) => {
+
+        if (goal) {
+            if (selectedGoal) {
+
+                groupDocRef.collection ("goals").doc (selectedGoal.id).update (goal).then ( () => {
+
+                    cancelEditGoal ();
+                }).catch ( (err) => {
+
+                    console.log (err);
+                    cancelEditGoal ();
+                });
+            } else {
+
+                groupDocRef.collection ("goals").add (goal).then ( () => {
+
+                    cancelEditGoal ();
+                }).catch ( (err) => {
+
+                    console.log (err);
+                    cancelEditGoal ();
+                });
+            }
+        }
+    };
+
+    const editGoalHandler = (goal:any) => {
+
+        setIsEditingGoal (true);
+        setSelectedGoal (goal);
+    };
+
+    const viewGoalHandler = (goal:any) => {
+
+        setSelectedGoal (goal);
+        setIsViewingGoal (true);
+    };
+
+    const cancelViewGoal = () => {
+
+        setIsViewingGoal (false);
+        setSelectedGoal (null);
+    }
+
+
+    const deleteGoalHandler = (goal:any) => {
+
+        setSelectedGoal (goal);
+        setIsDeletingGoal (true);
+    };
+
+    const cancelDeleteGoal = () => {
+
+        setIsDeletingGoal (false);
+        setSelectedGoal (null);
+    }
+
+    const deleteGoal = () => {
+
+        groupDocRef.collection ("goals").doc (selectedGoal.id).delete ().catch ( (err) => {
+
+            cancelDeleteGoal ();
+            console.log (err);
+        });
+    };
+
+    // console.log (Health.isAvailable ());
+    // console.log (Health.isAuthorized ());
     return (
         <IonPage>
             
@@ -222,6 +346,21 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
 			{
 				! loading && group && (
                     <React.Fragment>
+                        <IonAlert isOpen={isDeletingGoal} header="Eliminar objetivo" message={'Esta acción no podrá deshacerse'}
+                            onDidDismiss={ () => cancelDeleteGoal } buttons={
+                                [
+                                    {
+                                        text: 'Cancelar',
+                                        role: 'cancel',
+                                        cssClass: 'secondary',
+                                        handler: () => { cancelDeleteGoal (); }
+                                    },
+                                        {
+                                        text: 'Si, borrar',
+                                        handler: () => { deleteGoal (); }
+                                    }  
+                                ]}
+                        />
                         <EditGroupModal 
                             show={isEditing}
                             onCancel={cancelEditGroup}
@@ -232,8 +371,19 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                             show={isAddingUser}
                             type={typeUserAdd}
                             users={usersAdd}
-                            onCancel={cancelAddingUser}
-                            onSave={saveAddingUser}
+                            onCancel={cancelAddingUserToGroup}
+                            onSave={saveAddingUserToGroup}
+                        />
+                        <EditGoalModal
+                            show={isEditingGoal}
+                            onCancel={cancelEditGoal}
+                            onSave={saveGoal}
+                            editGoal={selectedGoal}
+                        />
+                        <ViewGoalModal
+                            show={isViewingGoal}
+                            onCancel={cancelViewGoal}
+                            goal={selectedGoal}
                         />
                         <IonHeader>
                             <IonToolbar class="ion-text-center">
@@ -321,61 +471,89 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                 }
                                 <IonListHeader>
                                     <IonLabel color="secondary">Objetivos actuales</IonLabel>
-                                    <IonButton>
+                                    <IonButton onClick={addGoalHandler}>
                                         <IonIcon icon={add} slot="icon-only" color="primary" />
                                     </IonButton>
                                 </IonListHeader>
-                                <IonItem lines="full">
-                                    <IonLabel className="ion-float-left">
-                                        Caminar 10 KM
-                                    </IonLabel>
-                                    <IonLabel className="ion-float-right ion-text-right ion-text-small">
-                                        01/11/2020 - 15/11/2020
-                                    </IonLabel>
-                                </IonItem>
-                                <IonItem lines="full">
-                                    <IonLabel className="ion-float-left">
-                                        Caminar 20 KM
-                                    </IonLabel>
-                                    <IonLabel className="ion-float-right ion-text-right ion-text-small">
-                                        01/11/2020 - 25/11/2020
-                                    </IonLabel>
-                                </IonItem>
-                                <IonItem lines="full">
-                                    <IonLabel className="ion-float-left">
-                                        Subir 30 pisos
-                                    </IonLabel>
-                                    <IonLabel className="ion-float-right ion-text-right ion-text-small">
-                                        01/11/2020 - 14/11/2020
-                                    </IonLabel>
-                                </IonItem>
+                                {
+                                    currentGoals.length > 0 && currentGoals.map ( (goalDoc: any) => (
+                                    
+                                        <IonCard key={goalDoc.id}>
+                                            <IonCardHeader className="ion-text-center ion-no-padding">
+                                                <h5>
+                                                    { goalDoc.type === "Distancia" ? "Caminar / Correr " : "Subir "}
+                                                    { goalDoc.value }
+                                                    { goalDoc.type === "Distancia" ? " kms" : " pisos"}
+                                                </h5>
+                                            </IonCardHeader>
+                                            <IonCardContent className="ion-text-center ion-no-padding">
+                                                { formatDate (goalDoc.startdate, 'DD/MM/YYYY') } - { formatDate (goalDoc.enddate, 'DD/MM/YYYY') }
+                                            </IonCardContent>
+                                            <IonGrid>
+                                                <IonRow>
+                                                    <IonCol className="ion-text-left">
+                                                        <IonButton color="warning" expand="block" size="small" fill="clear" onClick={ () => editGoalHandler (goalDoc)}>
+                                                            <IonLabel>Editar</IonLabel>
+                                                            <IonIcon icon={pencil} slot="end"/>
+                                                        </IonButton>
+                                                    </IonCol>
+                                                    <IonCol className="ion-text-center">
+                                                        <IonButton color="success" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
+                                                            <IonLabel>Ver</IonLabel>
+                                                            <IonIcon icon={eye} slot="end"/>
+                                                        </IonButton>
+                                                    </IonCol>
+                                                    <IonCol className="ion-text-right">
+                                                        <IonButton color="danger" expand="block" size="small" fill="clear" onClick={ () => deleteGoalHandler (goalDoc)}>
+                                                            <IonLabel>Eliminar</IonLabel>
+                                                            <IonIcon icon={trash} slot="end"/>
+                                                        </IonButton>
+                                                    </IonCol>
+                                                </IonRow>
+                                            </IonGrid>
+                                        </IonCard>
+                                    ))
+                                }
+                                {
+                                    currentGoals.length <= 0 && (
+                                        <IonItem lines="full">No hay ningún objetivo en curso.</IonItem>
+                                    )
+                                }
                                 <IonListHeader>
                                     <IonLabel color="secondary">Histórico de objetivos</IonLabel>
                                 </IonListHeader>
-                                <IonItem lines="full">
-                                    <IonLabel className="ion-float-left">
-                                        Caminar 10 KM
-                                    </IonLabel>
-                                    <IonLabel className="ion-float-right ion-text-right ion-text-small">
-                                        01/11/2020 - 15/11/2020
-                                    </IonLabel>
-                                </IonItem>
-                                <IonItem lines="full">
-                                    <IonLabel className="ion-float-left">
-                                        Caminar 20 KM
-                                    </IonLabel>
-                                    <IonLabel className="ion-float-right ion-text-right ion-text-small">
-                                        01/11/2020 - 25/11/2020
-                                    </IonLabel>
-                                </IonItem>
-                                <IonItem lines="full">
-                                    <IonLabel className="ion-float-left">
-                                        Subir 30 pisos
-                                    </IonLabel>
-                                    <IonLabel className="ion-float-right ion-text-right ion-text-small">
-                                        01/11/2020 - 14/11/2020
-                                    </IonLabel>
-                                </IonItem>
+                                {
+                                    pastGoals.length > 0 && pastGoals.map ( (goalDoc: any) => (
+                                    
+                                        <IonCard key={goalDoc.id}>
+                                            <IonCardHeader className="ion-text-center ion-no-padding">
+                                                <h5>
+                                                    { goalDoc.type === "Distancia" ? "Caminar / Correr " : "Subir "}
+                                                    { goalDoc.value }
+                                                    { goalDoc.type === "Distancia" ? " kms" : " pisos"}
+                                                </h5>
+                                            </IonCardHeader>
+                                            <IonCardContent className="ion-text-center ion-no-padding-top">
+                                                { formatDate (goalDoc.startdate, 'DD/MM/YYYY') } - { formatDate (goalDoc.enddate, 'DD/MM/YYYY') }
+                                            </IonCardContent>
+                                            <IonGrid>
+                                                <IonRow>
+                                                    <IonCol className="ion-text-center" offset="4" size="4">
+                                                        <IonButton color="success" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
+                                                            <IonLabel>Ver</IonLabel>
+                                                            <IonIcon icon={eye} slot="end"/>
+                                                        </IonButton>
+                                                    </IonCol>
+                                                </IonRow>
+                                            </IonGrid>
+                                        </IonCard>
+                                    ))
+                                }
+                                {
+                                    pastGoals.length <= 0 && (
+                                        <IonItem lines="full">No hay ningún objetivo pasado.</IonItem>
+                                    )
+                                }
                             </IonList>
                         </IonContent>
                     </React.Fragment>

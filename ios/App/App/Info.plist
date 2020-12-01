@@ -61,8 +61,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -73,5 +71,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSHealthUpdateUsageDescription</key>
+  	<string>$HEALTH_WRITE_PERMISSION</string>
+	<key>NSHealthShareUsageDescription</key>
+  	<string>$HEALTH_READ_PERMISSION</string>
 </dict>
 </plist>

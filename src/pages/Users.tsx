@@ -55,8 +55,7 @@ const Users: React.FC = () => {
 
             firebase.firestore ().collection ("users").doc (selectedUser.id).update (user).then ( () => {
 
-                setIsEditing (false);
-                setSelectedUser (false);
+                cancelEditUser ();
             }).catch ( (err) => {
                 
                 console.log (err);
@@ -154,15 +153,13 @@ const Users: React.FC = () => {
                                                     <IonItemOption color="warning">
                                                         <IonIcon icon={pencil} onClick={ () => startEditUser (userDoc)} />
                                                     </IonItemOption>
-                                                </IonItemOptions>
-                                                <IonItem lines="full" routerLink={`/users/detail/${userDoc.id}`}>
-                                                        { userDoc.name } { userDoc.surname }
-                                                </IonItem>
-                                                <IonItemOptions side="end">
                                                     <IonItemOption color="danger">
                                                         <IonIcon icon={trash} onClick={ () => startDeleteUser (userDoc)}/>
                                                     </IonItemOption>
                                                 </IonItemOptions>
+                                                <IonItem lines="full" routerLink={`/users/detail/${userDoc.id}`}>
+                                                        { userDoc.name } { userDoc.surname }
+                                                </IonItem>
                                             </IonItemSliding>
                                         ))
                                     }

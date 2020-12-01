@@ -56,6 +56,11 @@ const Login: React.FC = () => {
                 <IonGrid>
                     <IonRow>
                         <IonCol>
+                            <img src="assets/images/icon.png" alt="My Training Team" width="512px"/>
+                        </IonCol>
+                    </IonRow>
+                    <IonRow>
+                        <IonCol>
                             <IonItem className="ion-no-padding ion-text-center">
                                 <IonLabel position="stacked">E-mail</IonLabel>
                                 <IonInput type="email" placeholder="E-mail" ref={emailRef} value="rafasanabria1@gmail.com"></IonInput>
