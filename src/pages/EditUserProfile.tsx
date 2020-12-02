@@ -182,17 +182,16 @@ const EditUserProfile: React.FC = () => {
                             <IonGrid>
                                 <IonRow className="ion-margin-vertical">
                                     <IonCol size="4" offset="4" className="ion-text-center img-edit-profile">
-                                        { ! photo && MTT_ctx.userData.profileImg !== '' && (
+                                        { ! photo && MTT_ctx.userData.profileImg && MTT_ctx.userData.profileImg !== '' && (
                                             <img src={MTT_ctx.userData.profileImg} onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
                                         )}
-                                        { ! photo && ! MTT_ctx.userData.profileImg && (
+                                        { ! photo && (! MTT_ctx.userData.profileImg || MTT_ctx.userData.profileImg === '') && (
                                             <img src="assets/images/avatar.svg" onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
                                         )}
                                         { photo && (
-                                            <img src={photo.preview}  onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
+                                            <img src={photo.preview} onClick={takePhotoHandler} alt={MTT_ctx.userData.name} />
                                         )}
                                         { (uploading > 0 && uploading < 1) && (
-
                                             <IonProgressBar value={uploading} />
                                             )
                                         }

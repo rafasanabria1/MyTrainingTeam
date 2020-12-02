@@ -126,7 +126,7 @@ const Groups: React.FC = () => {
                     </IonHeader>
                     <IonContent fullscreen>
                         {
-                            groupsFiltered?.map ( (groupDoc: any) => (
+                            groupsFiltered && groupsFiltered.length > 0 && groupsFiltered?.map ( (groupDoc: any) => (
                             
                                 <Link to={`/groups/detail/${groupDoc.id}`} key={groupDoc.id}>
                                     <IonCard>
@@ -142,6 +142,18 @@ const Groups: React.FC = () => {
                                     </IonCard>
                                 </Link>
                             ))
+                        }
+                        {
+                            (! groupsFiltered || groupsFiltered.length <= 0) && (
+                            
+                                <IonCard>
+                                    <IonCardHeader>
+                                        <IonCardTitle>No hay cursos que mostrar.</IonCardTitle>
+                                    </IonCardHeader>
+                                    <IonCardContent>
+                                    </IonCardContent>
+                                </IonCard>
+                            )
                         }
                     </IonContent>
                 </React.Fragment>
