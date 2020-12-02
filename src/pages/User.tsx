@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { useDocumentData } from 'react-firebase-hooks/firestore';
+import { useDocumentData, useCollectionData } from 'react-firebase-hooks/firestore';
 import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonListHeader, IonLoading, IonNote, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 
 import firebase from 'firebase/app';
@@ -13,7 +13,31 @@ interface UserIdProps extends RouteComponentProps<{
 }> {}
 const User: React.FC<UserIdProps> = ({match}) => {
 
-    const [user, loading] = useDocumentData<any> (firebase.firestore ().doc ("/users/" + match.params.userid), {idField: 'id'});
+    const [user, loading]                     = useDocumentData<any> (firebase.firestore ().doc ("/users/" + match.params.userid), {idField: 'id'});
+    const [groups]                            = useCollectionData<any> (firebase.firestore ().collection ("groups"), {idField: 'id'});
+    const [groupsFiltered, setGroupsFiltered] = useState<any []> ([]);
+
+    useEffect ( () => {
+
+        let groupsFilteredAux:any[] = [];
+        if (groups && groups.length > 0){
+
+            groups.forEach ( (group) => {
+    
+                if (user.rol === 'Deportista') {
+                    if (group.athletes && group.athletes.includes (user.id)) {
+                        groupsFilteredAux.push (group);
+                    }
+                } else if (user.rol === 'Entrenador') {
+                    if (group.trainers && group.trainers.includes (user.id)) {
+                        groupsFilteredAux.push (group);
+                    }
+                }
+            });
+        }
+
+        setGroupsFiltered (groupsFilteredAux);
+    }, [groups, user]);
     
     return (
         <IonPage>
@@ -31,7 +55,7 @@ const User: React.FC<UserIdProps> = ({match}) => {
                                 <IonButtons slot="start">
                                     <IonBackButton defaultHref="/users" text=""/>
                                 </IonButtons>
-                                <IonTitle>{user.name} {user.surname}</IonTitle>
+                                <IonTitle className="ion-text-center">{user.name} {user.surname}</IonTitle>
                             </IonToolbar>
                         </IonHeader>
                         <IonContent fullscreen>
@@ -64,7 +88,7 @@ const User: React.FC<UserIdProps> = ({match}) => {
                                     <IonLabel>
                                         Cumpleaños:
                                     </IonLabel>
-                                    <IonNote slot="end">{ formatDate (user.birthdate, 'DD MMMM') }</IonNote>
+                                    <IonNote slot="end">{ user.birthdate ? formatDate (user.birthdate, 'DD MMMM') : '' }</IonNote>
                                 </IonItem>
                                 <IonItem lines="full">
                                     <IonLabel>
@@ -75,6 +99,14 @@ const User: React.FC<UserIdProps> = ({match}) => {
                                 <IonListHeader>
                                     <IonLabel color="secondary">Grupos a los que pertenece</IonLabel>
                                 </IonListHeader>
+                                {
+                                    groupsFiltered && groupsFiltered.length > 0 && groupsFiltered.map ( (groupDoc) => (
+
+                                        <IonItem lines="full" key={groupDoc.id}>
+                                            <IonLabel>{groupDoc.name}</IonLabel>
+                                        </IonItem>
+                                    ))
+                                }
                             </IonList>
                         </IonContent>
                         <IonFooter>

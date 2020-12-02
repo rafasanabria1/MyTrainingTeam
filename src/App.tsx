@@ -10,8 +10,6 @@ import EditUserProfile from './pages/EditUserProfile';
 import Group from './pages/Group';
 import Groups from './pages/Groups';
 import Login from './pages/Login';
-import Messages from './components/Messages';
-import ResetPassword from './pages/ResetPassword';
 import SideMenu from './components/SideMenu';
 import User from './pages/User';
 import Users from './pages/Users';
@@ -55,7 +53,6 @@ const App: React.FC = () => {
 						<IonRouterOutlet id="main2">
 							<Switch>
 								<Route path="/login" exact component={Login} />
-								<Route path="/reset-password" exact component={ResetPassword} />
 								<Redirect path="" to="/login" />
 							</Switch>
 						</IonRouterOutlet>
@@ -71,7 +68,6 @@ const App: React.FC = () => {
 								<Route path="/edit-user-profile" exact >
 									<EditUserProfile/>	
 								</Route>
-								<Route path="/messages" exact component={Messages} />
 								<Route path="/users/detail/:userid" component={User} />
 								{
 									MTT_ctx.userData.rol === 'Administrador' && (

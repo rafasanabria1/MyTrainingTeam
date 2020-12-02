@@ -147,7 +147,7 @@ const EditGroupModal: React.FC<{
                                 <IonLabel>Cancelar</IonLabel>
                             </IonButton>
                         </IonButtons>
-                        <IonTitle>{props.editGroup ? 'Actulizar' : 'Crear' } Grupo</IonTitle>
+                        <IonTitle className="ion-text-center">{props.editGroup ? 'Actulizar' : 'Crear' } Grupo</IonTitle>
                         <IonButtons slot="end">
                             <IonButton onClick={saveHandler}>
                                 <IonLabel>Guardar</IonLabel>

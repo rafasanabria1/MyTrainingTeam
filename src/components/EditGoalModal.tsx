@@ -84,7 +84,7 @@ const EditGoalModal: React.FC<{
                             <IonLabel>Cancelar</IonLabel>
                         </IonButton>
                     </IonButtons>
-                    <IonTitle>
+                    <IonTitle className="ion-text-center">
                         { props.editGoal !! ? 'Editar' : 'Añadir' } Objetivo
                     </IonTitle>
                     <IonButtons slot="end">

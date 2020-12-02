@@ -91,13 +91,13 @@ const Login: React.FC = () => {
                             </IonButton>
                         </IonCol>
                     </IonRow>
-                    <IonRow>
+                    {/* <IonRow>
                         <IonCol>
                             <IonButton color="secondary" fill="clear" routerLink="/reset-password" routerDirection="none">
                                 <IonLabel>¿Ha olvidado su contraseña?</IonLabel>
                             </IonButton>
                         </IonCol>
-                    </IonRow>
+                    </IonRow> */}
                 </IonGrid>
             </IonContent>
         </IonPage>

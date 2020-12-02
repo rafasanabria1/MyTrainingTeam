@@ -113,7 +113,7 @@ const Groups: React.FC = () => {
                             <IonButtons slot="start">
                                 <IonMenuButton />
                             </IonButtons>
-                            <IonTitle>Grupos</IonTitle>
+                            <IonTitle className="ion-text-center">Grupos</IonTitle>
                             {
                                 MTT_ctx.userData.rol !== 'Deportista' && (
 

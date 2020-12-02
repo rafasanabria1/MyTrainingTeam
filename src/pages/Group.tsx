@@ -19,7 +19,6 @@ import { formatDate } from '../Helpers';
 import moment from 'moment';
 import ViewGoalModal from '../components/ViewGoalModal';
 
-import { Health } from '@ionic-native/health';
 import MTTContext from '../MTTContext';
 
 interface GroupIdProps extends RouteComponentProps<{
@@ -336,8 +335,6 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
         });
     };
 
-    // console.log (Health.isAvailable ());
-    // console.log (Health.isAuthorized ());
     return (
         <IonPage>
             
@@ -387,13 +384,14 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                             show={isViewingGoal}
                             onCancel={cancelViewGoal}
                             goal={selectedGoal}
+                            groupDocRef={groupDocRef}
                         />
                         <IonHeader>
                             <IonToolbar class="ion-text-center">
                                 <IonButtons slot="start">
                                     <IonBackButton defaultHref="/groups" text=""/>
                                 </IonButtons>
-                                <IonTitle>{group.name}</IonTitle>
+                                <IonTitle className="ion-text-center">{group.name}</IonTitle>
                                 {
                                     MTT_ctx.userData.rol !== 'Deportista' && (
                                         <IonButtons slot="end">
@@ -505,7 +503,7 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                 {
                                     currentGoals.length > 0 && currentGoals.map ( (goalDoc: any) => (
                                     
-                                        <IonCard key={goalDoc.id}>
+                                        <IonCard key={goalDoc.id}  className={ goalDoc.users && goalDoc.users.includes (MTT_ctx.user.uid) ? 'objetivo-completado' : ''}>
                                             <IonCardHeader className="ion-text-center ion-no-padding">
                                                 <h5>
                                                     { goalDoc.type === "Distancia" ? "Caminar / Correr " : "Subir "}
@@ -529,7 +527,7 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                                         }
                                                     </IonCol>
                                                     <IonCol className="ion-text-center">
-                                                        <IonButton color="success" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
+                                                        <IonButton color="primary" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
                                                             <IonLabel>Ver</IonLabel>
                                                             <IonIcon icon={eye} slot="end"/>
                                                         </IonButton>
@@ -560,7 +558,7 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                 {
                                     pastGoals.length > 0 && pastGoals.map ( (goalDoc: any) => (
                                     
-                                        <IonCard key={goalDoc.id}>
+                                        <IonCard key={goalDoc.id} className={ goalDoc.users && goalDoc.users.includes (MTT_ctx.user.uid) ? 'objetivo-completado' : ''}>
                                             <IonCardHeader className="ion-text-center ion-no-padding">
                                                 <h5>
                                                     { goalDoc.type === "Distancia" ? "Caminar / Correr " : "Subir "}
@@ -568,13 +566,13 @@ const Group: React.FC<GroupIdProps|null> = ({match}) => {
                                                     { goalDoc.type === "Distancia" ? " kms" : " pisos"}
                                                 </h5>
                                             </IonCardHeader>
-                                            <IonCardContent className="ion-text-center ion-no-padding-top">
+                                            <IonCardContent className="ion-text-center ion-no-padding">
                                                 { formatDate (goalDoc.startdate, 'DD/MM/YYYY') } - { formatDate (goalDoc.enddate, 'DD/MM/YYYY') }
                                             </IonCardContent>
                                             <IonGrid>
                                                 <IonRow>
                                                     <IonCol className="ion-text-center" offset="4" size="4">
-                                                        <IonButton color="success" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
+                                                        <IonButton color="primary" expand="block" size="small" fill="clear" onClick={ () => viewGoalHandler (goalDoc)}>
                                                             <IonLabel>Ver</IonLabel>
                                                             <IonIcon icon={eye} slot="end"/>
                                                         </IonButton>

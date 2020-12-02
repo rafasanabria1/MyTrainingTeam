@@ -167,7 +167,7 @@ const EditUserProfile: React.FC = () => {
                                 <IonButtons slot="start">
                                     <IonBackButton defaultHref="/groups" text=""/>
                                 </IonButtons>
-                                <IonTitle>Perfil</IonTitle>
+                                <IonTitle className="ion-text-center">Perfil</IonTitle>
                                 <IonButtons slot="end">
                                     <IonButton size="small" onClick={updateProfile}>
                                         <IonLabel>Guardar</IonLabel>

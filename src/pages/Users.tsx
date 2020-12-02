@@ -138,7 +138,7 @@ const Users: React.FC = () => {
                                     <IonButtons slot="start">
                                         <IonMenuButton />
                                     </IonButtons>
-                                    <IonTitle>Usuarios</IonTitle>
+                                    <IonTitle className="ion-text-center">Usuarios</IonTitle>
                                     <IonButtons slot="end">
                                         <IonIcon icon={add} slot="icon-only" onClick={ () => { startAddUser (); } }/>
                                     </IonButtons>

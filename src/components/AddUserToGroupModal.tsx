@@ -27,7 +27,7 @@ const AddUserToGroupModal: React.FC<{
                                 <IonLabel>Cancelar</IonLabel>
                             </IonButton>
                         </IonButtons>
-                        <IonTitle>Asignar {props.type}</IonTitle>
+                        <IonTitle className="ion-text-center">Asignar {props.type}</IonTitle>
                         <IonButtons slot="end">
                             <IonButton onClick={ () => props.onSave (selectedUser) }>
                                 <IonLabel>Guardar</IonLabel>

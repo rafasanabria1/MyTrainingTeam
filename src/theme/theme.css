@@ -84,3 +84,8 @@ ion-icon.add-group {
     font-size: 22px !important;
     font-weight: 700 !important;
 }
+
+ion-card.objetivo-completado {
+
+    --background: rgba(0,255,0,0.3);
+}

@@ -94,7 +94,7 @@ const EditUserModal: React.FC<{
                             <IonLabel>Cancelar</IonLabel>
                         </IonButton>
                     </IonButtons>
-                    <IonTitle>
+                    <IonTitle className="ion-text-center">
                         { props.editUser !! ? 'Editar' : 'Añadir' } Usuario
                     </IonTitle>
                 </IonToolbar>
