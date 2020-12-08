@@ -89,3 +89,13 @@ ion-card.objetivo-completado {
 
     --background: rgba(0,255,0,0.3);
 }
+
+@media (min-width: 576px) {
+    ion-app {
+        max-width: 576px;
+        margin: 20px auto;
+        position: relative;
+        border-radius: 5px;
+        border: solid 1px #aaa;
+    }
+}
