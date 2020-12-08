@@ -63,7 +63,7 @@ const Login: React.FC = () => {
                         <IonCol>
                             <IonItem className="ion-no-padding ion-text-center">
                                 <IonLabel position="stacked">E-mail</IonLabel>
-                                <IonInput type="email" placeholder="E-mail" ref={emailRef} value="rafasanabria1@gmail.com"></IonInput>
+                                <IonInput type="email" placeholder="E-mail" ref={emailRef} value=""></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>
@@ -71,7 +71,7 @@ const Login: React.FC = () => {
                         <IonCol>
                             <IonItem className="ion-no-padding ion-text-center">
                                 <IonLabel position="stacked">Contraseña</IonLabel>
-                                <IonInput type="password" placeholder="Contraseña" ref={passwordRef} value="123456"></IonInput>
+                                <IonInput type="password" placeholder="Contraseña" ref={passwordRef} value=""></IonInput>
                             </IonItem>
                         </IonCol>
                     </IonRow>

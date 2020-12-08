@@ -50,7 +50,7 @@ const App: React.FC = () => {
 				(! MTT_ctx.loadingUser && MTT_ctx.user === null) && (
 			
 					<IonReactRouter>
-						<IonRouterOutlet id="main2">
+						<IonRouterOutlet id="main ">
 							<Switch>
 								<Route path="/login" exact component={Login} />
 								<Redirect path="" to="/login" />

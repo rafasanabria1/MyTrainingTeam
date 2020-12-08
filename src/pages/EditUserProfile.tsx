@@ -148,7 +148,13 @@ const EditUserProfile: React.FC = () => {
             });
         } else {
 
-            setProfileSuccess (true);
+            firebase.firestore ().collection ("users").doc (MTT_ctx.user.uid).update (updateObject).then ( () => {
+                
+                setProfileSuccess (true);
+            }).catch ( (err) => {
+                
+                console.log (err);
+            });
         }
     };
 

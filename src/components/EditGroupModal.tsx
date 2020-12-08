@@ -101,7 +101,7 @@ const EditGroupModal: React.FC<{
         Camera.getPhoto ({
             resultType: CameraResultType.Uri,
             source: CameraSource.Prompt,
-            direction: CameraDirection.Front,
+            direction: CameraDirection.Rear,
             quality: 80,
             width: 500,
             promptLabelHeader: 'Seleccionar foto de perfil',
