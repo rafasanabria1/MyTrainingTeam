@@ -98,4 +98,7 @@ ion-card.objetivo-completado {
         border-radius: 5px;
         border: solid 1px #aaa;
     }
+    input#_capacitor-camera-input {
+        display: none;
+    }
 }
